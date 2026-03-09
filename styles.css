@@ -122,21 +122,13 @@ body {
     z-index: 1;
 }
 
-.sidebar-actions {
+.sidebar-header .toggle-add-btn {
     position: relative;
     z-index: 2;
     margin: 16px;
-    margin-left: auto;
-    display: flex;
-    gap: 8px;
-}
-
-.sidebar-header .toggle-add-btn,
-.sidebar-header .history-btn {
-    position: relative;
+    align-self: flex-end;
     background: rgba(0,47,167,0.85);
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    margin: 0;
 }
 
 .sidebar-header h2 {
@@ -144,8 +136,7 @@ body {
     font-weight: 700;
 }
 
-.toggle-add-btn,
-.history-btn {
+.toggle-add-btn {
     background: var(--secondary-color);
     color: white;
     border: none;
@@ -161,8 +152,7 @@ body {
     transition: background 0.2s;
 }
 
-.toggle-add-btn:hover,
-.history-btn:hover {
+.toggle-add-btn:hover {
     background: var(--primary-color);
 }
 
@@ -706,53 +696,6 @@ body {
     justify-content: flex-end;
 }
 
-.history-modal-content {
-    max-width: 620px;
-}
-
-.history-list {
-    max-height: 52vh;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 16px;
-}
-
-.history-item {
-    background: var(--light-bg);
-    border: 1px solid var(--border-color);
-    border-left: 4px solid var(--other-color);
-    border-radius: 8px;
-    padding: 10px 12px;
-}
-
-.history-item.ef { border-left-color: var(--ef-color); }
-.history-item.sv1 { border-left-color: var(--sv1-color); }
-.history-item.sv2 { border-left-color: var(--sv2-color); }
-.history-item.vma { border-left-color: var(--vma-color); }
-.history-item.aerobic { border-left-color: var(--aerobic-color); }
-.history-item.sprint { border-left-color: var(--sprint-color); }
-.history-item.force { border-left-color: var(--force-color); }
-.history-item.flexibility { border-left-color: var(--flexibility-color); }
-.history-item.technique { border-left-color: var(--technique-color); }
-.history-item.other { border-left-color: var(--other-color); }
-
-.history-title {
-    font-weight: 700;
-    margin-bottom: 2px;
-}
-
-.history-meta {
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-}
-
-.history-empty {
-    color: var(--text-secondary);
-    text-align: center;
-    padding: 16px;
-}
 
 /* ============== SCROLLBAR ============== */
 ::-webkit-scrollbar {
@@ -881,12 +824,11 @@ body {
         max-height: 46vh;
     }
 
-    .sidebar-actions {
+    .sidebar-header .toggle-add-btn {
         margin: 12px;
     }
 
-    .toggle-add-btn,
-    .history-btn {
+    .toggle-add-btn {
         width: 40px;
         height: 40px;
         font-size: 1.35rem;
