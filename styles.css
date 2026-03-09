@@ -144,7 +144,7 @@ body {
     font-weight: 700;
 }
 
-.toggle-add-btn {
+.toggle-add-btn,
 .history-btn {
     background: var(--secondary-color);
     color: white;
