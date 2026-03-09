@@ -36,11 +36,22 @@ const categoryLabels = {
     other: 'Autre',
 };
 
+const sportLabels = {
+    running: 'Course à pied',
+    cycling: 'Cyclisme',
+    hike_alpi: 'Randonnée & Alpi',
+    ski_rando: 'Ski de rando',
+    ski_fond: 'Ski de fond',
+    climbing: 'Escalade',
+    strength: 'Musculation',
+};
+
 // ============== DOM ELEMENTS ==============
 const elements = {
     sessionTitle: document.getElementById('sessionTitle'),
     sessionComment: document.getElementById('sessionComment'),
     sessionCategory: document.getElementById('sessionCategory'),
+    sessionSport: document.getElementById('sessionSport'),
     addSessionBtn: document.getElementById('addSessionBtn'),
     prevMonth: document.getElementById('prevMonth'),
     nextMonth: document.getElementById('nextMonth'),
@@ -105,6 +116,7 @@ function addSession() {
     const title = elements.sessionTitle.value.trim();
     const comment = elements.sessionComment.value.trim();
     const category = elements.sessionCategory.value || 'other';
+    const sport = elements.sessionSport.value || 'running';
 
     if (!title) {
         alert('Veuillez entrer un titre pour la séance');
@@ -116,6 +128,7 @@ function addSession() {
         title,
         comment,
         category,
+        sport,
         dateAdded: new Date().toISOString(),
     };
 
@@ -127,6 +140,7 @@ function addSession() {
     elements.sessionTitle.value = '';
     elements.sessionComment.value = '';
     elements.sessionCategory.value = '';
+    elements.sessionSport.value = 'running';
     elements.sessionTitle.focus();
 }
 
@@ -455,6 +469,7 @@ function showSessionLibraryModal(session) {
     elements.modalBody.innerHTML = `
         <p><strong>Titre:</strong> ${escapeHtml(session.title)}</p>
         <p><strong>Catégorie:</strong> ${categoryLabels[session.category]}</p>
+        <p><strong>Sport:</strong> ${escapeHtml(getSportLabel(session.sport))}</p>
         ${session.comment ? `<p><strong>Commentaire:</strong> ${escapeHtml(session.comment)}</p>` : ''}
     `;
 
@@ -469,6 +484,7 @@ function showSessionModal(session, dateStr) {
     elements.modalBody.innerHTML = `
         <p><strong>Titre:</strong> ${escapeHtml(session.title)}</p>
         <p><strong>Catégorie:</strong> ${categoryLabels[session.category]}</p>
+        <p><strong>Sport:</strong> ${escapeHtml(getSportLabel(session.sport))}</p>
         ${session.comment ? `<p><strong>Commentaire:</strong> ${escapeHtml(session.comment)}</p>` : ''}
         <p><strong>Date:</strong> ${new Date(dateStr).toLocaleDateString('fr-FR')}</p>
     `;
@@ -572,6 +588,10 @@ function formatDateForStorage(date) {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+function getSportLabel(sportKey) {
+    return sportLabels[sportKey] || sportLabels.running;
 }
 
 function removeLibrarySession(sessionId) {
