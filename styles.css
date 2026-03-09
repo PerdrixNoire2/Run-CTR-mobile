@@ -155,9 +155,9 @@ body {
     transition: background 0.2s;
 }
 
-.toggle-add-btn::before {
-    content: "+";
+.toggle-add-icon {
     display: block;
+    line-height: 1;
 }
 
 .toggle-add-btn:hover {
