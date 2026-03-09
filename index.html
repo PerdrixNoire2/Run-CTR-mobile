@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plateforme d'Entraînement</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar avec la librairie -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="logo-sport.png" alt="Training Platform Logo" />
+                <button id="toggleAddForm" class="toggle-add-btn">✚</button>
+            </div>
+
+            <!-- Section pour ajouter une nouvelle séance (peut être masquée) -->
+            <div class="add-session-section hidden" id="addSessionSection">
+                <h3>Ajouter une séance</h3>
+                <input type="text" id="sessionTitle" placeholder="Titre de la séance" class="input-field">
+                <textarea id="sessionComment" placeholder="Commentaire" class="input-field" rows="2"></textarea>
+                <select id="sessionCategory" class="input-field">
+                    <option value="">Sélectionner une catégorie</option>
+                    <option value="ef">EF</option>
+                    <option value="sv1">SV1 Seuil Aérobie- SV2 Anaérobie</option>
+                    <option value="sv2">SV2 Seuil Anaérobie - VMA</option>
+                    <option value="vma">VMA - Vitesse- VO2max</option>
+                    <option value="aerobic">Aérobie</option>
+                    <option value="sprint">Sprint</option>
+                    <option value="force">Force</option>
+                    <option value="flexibility">Flexibilité</option>
+                    <option value="technique">Technique</option>
+                    <option value="other">Autre</option>
+                </select>
+                <button id="addSessionBtn" class="btn-primary">Ajouter</button>
+            </div>
+
+            <!-- Liste catégorisée de toutes les séances -->
+            <div class="all-sessions-container">
+                <div id="libraryCategories"></div>
+            </div>
+        </aside>
+
+        <!-- Calendrier -->
+        <main class="calendar-container">
+            <div class="calendar-header">
+                <button id="prevMonth" class="nav-btn">‹</button>
+                <h2 id="monthYear"></h2>
+                <button id="nextMonth" class="nav-btn">›</button>
+                <!-- <div class="calendar-controls">
+                    <button id="todayBtn" class="btn-secondary">Aujourd'hui</button>
+                </div> -->
+            </div>
+
+            <div class="calendar">
+                <div class="weekdays">
+                    <div class="weekday">Lun.</div>
+                    <div class="weekday">Mar.</div>
+                    <div class="weekday">Mer.</div>
+                    <div class="weekday">Jeu.</div>
+                    <div class="weekday">Ven.</div>
+                    <div class="weekday">Sam.</div>
+                    <div class="weekday">Dim.</div>
+                </div>
+                <div id="calendarDays" class="days"></div>
+            </div>
+
+            <!-- Affichage des séances du jour sélectionné -->
+            <div class="day-details">
+                <h3 id="selectedDayTitle">Sélectionner un jour</h3>
+                <div id="daySessionsList" class="day-sessions-list"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal pour voir/éditer une séance -->
+    <div id="sessionModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Détails de la séance</h3>
+            <div id="modalBody"></div>
+            <div class="modal-actions">
+                <button id="deleteSessionBtn" class="btn-danger">Supprimer</button>
+                <button id="closeModalBtn" class="btn-secondary">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
