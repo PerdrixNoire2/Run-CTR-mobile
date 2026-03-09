@@ -155,6 +155,11 @@ body {
     transition: background 0.2s;
 }
 
+.toggle-add-btn::before {
+    content: "+";
+    display: block;
+}
+
 .toggle-add-btn:hover {
     background: var(--primary-color);
 }
