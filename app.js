@@ -3,7 +3,6 @@ const state = {
     currentDate: new Date(),
     sessions: [], // Array of all sessions
     scheduledSessions: {}, // Format: { 'YYYY-MM-DD': [sessionIds] }
-    deletedSessionsHistory: [], // Auto-cleaned after 7 days
     selectedDay: null,
     draggedSession: null,
     isDragging: false,
@@ -54,12 +53,7 @@ const elements = {
     modalBody: document.getElementById('modalBody'),
     deleteSessionBtn: document.getElementById('deleteSessionBtn'),
     closeModalBtn: document.getElementById('closeModalBtn'),
-    closeModalX: document.querySelector('#sessionModal .close-modal'),
-    historyBtn: document.getElementById('historyBtn'),
-    historyModal: document.getElementById('historyModal'),
-    historyModalBody: document.getElementById('historyModalBody'),
-    closeHistoryModalBtn: document.getElementById('closeHistoryModalBtn'),
-    closeHistoryModalX: document.getElementById('closeHistoryModalX'),
+    closeModalX: document.querySelector('.close-modal'),
 };
 
 // ============== INITIALIZATION ==============
@@ -103,13 +97,6 @@ function setupEventListeners() {
     elements.deleteSessionBtn.addEventListener('click', deleteScheduledSession);
     elements.sessionModal.addEventListener('click', (e) => {
         if (e.target === elements.sessionModal) closeModal();
-    });
-
-    elements.historyBtn.addEventListener('click', openHistoryModal);
-    elements.closeHistoryModalBtn.addEventListener('click', closeHistoryModal);
-    elements.closeHistoryModalX.addEventListener('click', closeHistoryModal);
-    elements.historyModal.addEventListener('click', (e) => {
-        if (e.target === elements.historyModal) closeHistoryModal();
     });
 }
 
@@ -174,7 +161,7 @@ function renderSessions() {
             title.classList.toggle('collapsed');
             const arrow = title.querySelector('.toggle-arrow');
             if (list.classList.contains('collapsed')) {
-                arrow.textContent = '►';
+                arrow.textContent = '▶';
             } else {
                 arrow.textContent = '▼';
             }
@@ -197,7 +184,7 @@ function createSessionElement(session) {
     `;
 
     // Set border color based on category
-    const categoryColors = {
+    const categoryColorsMap = {
         aerobic: '#fbbf24',
         sprint: '#f87171',
         force: '#a78bfa',
@@ -205,14 +192,14 @@ function createSessionElement(session) {
         technique: '#60a5fa',
         other: '#94a3b8',
     };
-    div.style.borderLeftColor = categoryColors[session.category] || categoryColors.other;
+    div.style.borderLeftColor = categoryColorsMap[session.category] || categoryColorsMap.other;
 
     // Drag events
     div.addEventListener('dragstart', handleDragStart);
     div.addEventListener('dragend', handleDragEnd);
 
     // Click to view details (only if not dragging)
-    div.addEventListener('click', (e) => {
+    div.addEventListener('click', () => {
         if (!state.isDragging) {
             showSessionLibraryModal(session);
         }
@@ -307,7 +294,7 @@ function renderCalendar() {
     const daysInPrevMonth = new Date(year, month, 0).getDate();
 
     // Adjust for Monday start (ISO week)
-    let adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
+    const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
 
     elements.calendarDays.innerHTML = '';
 
@@ -500,29 +487,15 @@ function closeModal() {
     elements.deleteSessionBtn.style.display = 'none';
 }
 
-function openHistoryModal() {
-    renderHistoryModal();
-    elements.historyModal.classList.add('show');
-}
-
-function closeHistoryModal() {
-    elements.historyModal.classList.remove('show');
-}
-
 function deleteScheduledSession() {
     const sessionId = elements.deleteSessionBtn.dataset.sessionId;
     const dateStr = elements.deleteSessionBtn.dataset.dateStr;
-    const session = state.sessions.find((s) => s.id === sessionId);
 
     if (state.scheduledSessions[dateStr]) {
         state.scheduledSessions[dateStr] = state.scheduledSessions[dateStr].filter((id) => id !== sessionId);
         if (state.scheduledSessions[dateStr].length === 0) {
             delete state.scheduledSessions[dateStr];
         }
-    }
-
-    if (session && dateStr) {
-        addHistoryEntry(session, dateStr, 'manual');
     }
 
     saveToLocalStorage();
@@ -536,7 +509,6 @@ function saveToLocalStorage() {
     const data = {
         sessions: state.sessions,
         scheduledSessions: state.scheduledSessions,
-        deletedSessionsHistory: state.deletedSessionsHistory,
     };
     localStorage.setItem('trainingPlatformData', JSON.stringify(data));
 }
@@ -548,8 +520,6 @@ function loadFromLocalStorage() {
             const parsed = JSON.parse(data);
             state.sessions = parsed.sessions || [];
             state.scheduledSessions = parsed.scheduledSessions || {};
-            state.deletedSessionsHistory = parsed.deletedSessionsHistory || [];
-            pruneHistorySessions();
         } catch (e) {
             console.error('Error loading from localStorage:', e);
         }
@@ -562,21 +532,10 @@ function purgePastScheduledSessions() {
 
     Object.keys(state.scheduledSessions).forEach((dateStr) => {
         if (dateStr < todayStr) {
-            const sessionIds = state.scheduledSessions[dateStr] || [];
-            sessionIds.forEach((sessionId) => {
-                const session = state.sessions.find((s) => s.id === sessionId);
-                if (session) {
-                    addHistoryEntry(session, dateStr, 'expired');
-                }
-            });
             delete state.scheduledSessions[dateStr];
             hasChanges = true;
         }
     });
-
-    if (pruneHistorySessions()) {
-        hasChanges = true;
-    }
 
     if (hasChanges) {
         saveToLocalStorage();
@@ -604,83 +563,12 @@ function scheduleDailyCleanup() {
     }, delayMs);
 }
 
-function addHistoryEntry(session, scheduledDate, source) {
-    state.deletedSessionsHistory.push({
-        sessionId: session.id,
-        title: session.title,
-        comment: session.comment || '',
-        category: session.category || 'other',
-        scheduledDate,
-        removedAt: new Date().toISOString(),
-        source,
-    });
-    pruneHistorySessions();
-}
-
-function pruneHistorySessions() {
-    const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
-    const now = Date.now();
-    const beforeCount = state.deletedSessionsHistory.length;
-
-    state.deletedSessionsHistory = state.deletedSessionsHistory.filter((entry) => {
-        const removedAtTs = new Date(entry.removedAt).getTime();
-        return Number.isFinite(removedAtTs) && (now - removedAtTs) <= maxAgeMs;
-    });
-
-    return state.deletedSessionsHistory.length !== beforeCount;
-}
-
-function renderHistoryModal() {
-    pruneHistorySessions();
-    elements.historyModalBody.innerHTML = '';
-
-    if (state.deletedSessionsHistory.length === 0) {
-        const empty = document.createElement('p');
-        empty.className = 'history-empty';
-        empty.textContent = 'Aucune séance supprimée sur les 7 derniers jours.';
-        elements.historyModalBody.appendChild(empty);
-        return;
-    }
-
-    const sorted = [...state.deletedSessionsHistory].sort(
-        (a, b) => new Date(b.removedAt).getTime() - new Date(a.removedAt).getTime()
-    );
-
-    sorted.forEach((entry) => {
-        const item = document.createElement('div');
-        item.className = `history-item ${entry.category || 'other'}`;
-
-        const sourceLabel = entry.source === 'expired'
-            ? 'supprimée automatiquement'
-            : 'supprimée manuellement';
-        const scheduledDateLabel = formatDateDisplay(entry.scheduledDate);
-        const removedDateLabel = new Date(entry.removedAt).toLocaleDateString('fr-FR');
-
-        item.innerHTML = `
-            <div class="history-title">${escapeHtml(entry.title || 'Séance')}</div>
-            <div class="history-meta">
-                ${escapeHtml(categoryLabels[entry.category] || 'Autre')} • prévue le ${scheduledDateLabel}
-            </div>
-            <div class="history-meta">${sourceLabel} le ${removedDateLabel}</div>
-            ${entry.comment ? `<div class="history-meta">${escapeHtml(entry.comment)}</div>` : ''}
-        `;
-        elements.historyModalBody.appendChild(item);
-    });
-}
-
 // ============== UTILITIES ==============
 function formatDateForStorage(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-}
-
-function formatDateDisplay(dateStr) {
-    if (!dateStr) return '-';
-    const date = new Date(`${dateStr}T12:00:00`);
-    if (Number.isNaN(date.getTime())) return dateStr;
-    return date.toLocaleDateString('fr-FR');
 }
 
 function removeLibrarySession(sessionId) {
