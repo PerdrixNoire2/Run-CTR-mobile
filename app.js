@@ -9,17 +9,14 @@ const state = {
 };
 
 
-const categoryColors = {
-    ef: '#228B22', // vert forêt
-    sv1: '#0074D9', // bleu
-    sv2: '#ff9800', // orange
-    vma: '#e53935', // rouge
-    aerobic: '#fbbf24',
-    sprint: '#f87171',
-    force: '#a78bfa',
-    flexibility: '#22c55e',
-    technique: '#60a5fa',
-    other: '#94a3b8',
+const sportColors = {
+    running: '#002fa7',
+    cycling: '#1f4eb9',
+    hike_alpi: '#3a67ca',
+    ski_rando: '#567fd9',
+    ski_fond: '#769ae6',
+    climbing: '#9bb8f2',
+    strength: '#ffffff',
 };
 
 
@@ -159,7 +156,6 @@ function renderSessions() {
         const title = document.createElement('div');
         title.className = 'library-category-title';
         title.innerHTML = `<span class="toggle-arrow">▼</span> ${categoryLabels[cat]}`;
-        title.style.borderLeft = `6px solid ${categoryColors[cat]}`;
         section.appendChild(title);
 
         const list = document.createElement('div');
@@ -191,22 +187,18 @@ function createSessionElement(session) {
     div.draggable = true;
     div.dataset.sessionId = session.id;
     div.dataset.category = session.category;
+    div.dataset.sport = session.sport || 'running';
 
     div.innerHTML = `
         <div class="session-title">${escapeHtml(session.title)}</div>
         <button class="delete-library-btn" title="Supprimer la séance">×</button>
     `;
-
-    // Set border color based on category
-    const categoryColorsMap = {
-        aerobic: '#fbbf24',
-        sprint: '#f87171',
-        force: '#a78bfa',
-        flexibility: '#22c55e',
-        technique: '#60a5fa',
-        other: '#94a3b8',
-    };
-    div.style.borderLeftColor = categoryColorsMap[session.category] || categoryColorsMap.other;
+    // Set border color based on sport
+    const sessionSport = session.sport || 'running';
+    div.style.borderLeftColor = sportColors[sessionSport] || sportColors.running;
+    if (sessionSport === 'strength') {
+        div.style.boxShadow = 'inset 0 0 0 1px #d9e2f2';
+    }
 
     // Drag events
     div.addEventListener('dragstart', handleDragStart);
@@ -370,7 +362,8 @@ function createDayElement(date, isOtherMonth) {
         const session = state.sessions.find((s) => s.id === sessionId);
         if (session) {
             const chipElement = document.createElement('div');
-            chipElement.className = `day-session-chip ${session.category}`;
+            const sessionSport = session.sport || 'running';
+            chipElement.className = `day-session-chip ${sessionSport}`;
             chipElement.textContent = session.title;
             chipElement.title = `${session.title}\n${session.comment || ''}`;
             chipElement.addEventListener('click', () => {
@@ -429,7 +422,8 @@ function updateDayDetails() {
         const session = state.sessions.find((s) => s.id === sessionId);
         if (session) {
             const div = document.createElement('div');
-            div.className = `session-detail-item ${session.category}`;
+            const sessionSport = session.sport || 'running';
+            div.className = `session-detail-item ${sessionSport}`;
             div.innerHTML = `
                 <div class="session-detail-title">${escapeHtml(session.title)}</div>
                 ${session.comment ? `<div class="session-detail-info">${escapeHtml(session.comment)}</div>` : ''}

@@ -366,6 +366,18 @@ body {
     border-left: 4px solid var(--other-color);
 }
 
+/* Couleurs par sport pour les etiquettes de seances */
+.session-item[data-sport="running"] { border-left-color: #002fa7; }
+.session-item[data-sport="cycling"] { border-left-color: #1f4eb9; }
+.session-item[data-sport="hike_alpi"] { border-left-color: #3a67ca; }
+.session-item[data-sport="ski_rando"] { border-left-color: #567fd9; }
+.session-item[data-sport="ski_fond"] { border-left-color: #769ae6; }
+.session-item[data-sport="climbing"] { border-left-color: #9bb8f2; }
+.session-item[data-sport="strength"] {
+    border-left-color: #ffffff;
+    box-shadow: inset 0 0 0 1px #d9e2f2;
+}
+
 /* ============== CALENDAR ============== */
 .calendar-container {
     flex: 1;
@@ -547,6 +559,17 @@ body {
     border-left-color: var(--other-color);
 }
 
+.day-session-chip.running { border-left-color: #002fa7; }
+.day-session-chip.cycling { border-left-color: #1f4eb9; }
+.day-session-chip.hike_alpi { border-left-color: #3a67ca; }
+.day-session-chip.ski_rando { border-left-color: #567fd9; }
+.day-session-chip.ski_fond { border-left-color: #769ae6; }
+.day-session-chip.climbing { border-left-color: #9bb8f2; }
+.day-session-chip.strength {
+    border-left-color: #ffffff;
+    box-shadow: inset 0 0 0 1px #d9e2f2;
+}
+
 /* ============== DAY DETAILS ============== */
 .day-details {
     background: var(--light-bg);
@@ -600,6 +623,17 @@ body {
 
 .session-detail-item.other {
     border-left-color: var(--other-color);
+}
+
+.session-detail-item.running { border-left-color: #002fa7; }
+.session-detail-item.cycling { border-left-color: #1f4eb9; }
+.session-detail-item.hike_alpi { border-left-color: #3a67ca; }
+.session-detail-item.ski_rando { border-left-color: #567fd9; }
+.session-detail-item.ski_fond { border-left-color: #769ae6; }
+.session-detail-item.climbing { border-left-color: #9bb8f2; }
+.session-detail-item.strength {
+    border-left-color: #ffffff;
+    box-shadow: inset 0 0 0 1px #d9e2f2;
 }
 
 .session-detail-title {
