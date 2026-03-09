@@ -29,10 +29,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <img src="logo-sport.png" alt="Training Platform Logo" />
-                <div class="sidebar-actions">
-                    <button id="historyBtn" class="history-btn" title="Historique des séances">&#128214;</button>
-                    <button id="toggleAddForm" class="toggle-add-btn" title="Ajouter une séance">+</button>
-                </div>
+                <button id="toggleAddForm" class="toggle-add-btn">+</button>
             </div>
 
             <!-- Section pour ajouter une nouvelle séance (peut être masquée) -->
@@ -103,17 +100,6 @@
             <div class="modal-actions">
                 <button id="deleteSessionBtn" class="btn-danger">Supprimer</button>
                 <button id="closeModalBtn" class="btn-secondary">Fermer</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="historyModal" class="modal">
-        <div class="modal-content history-modal-content">
-            <span id="closeHistoryModalX" class="close-modal">&times;</span>
-            <h3>Historique (7 derniers jours)</h3>
-            <div id="historyModalBody" class="history-list"></div>
-            <div class="modal-actions">
-                <button id="closeHistoryModalBtn" class="btn-secondary">Fermer</button>
             </div>
         </div>
     </div>

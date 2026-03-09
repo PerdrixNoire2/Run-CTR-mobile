@@ -527,11 +527,14 @@ function loadFromLocalStorage() {
 }
 
 function purgePastScheduledSessions() {
-    const todayStr = formatDateForStorage(new Date());
+    const cutoffDate = new Date();
+    cutoffDate.setHours(0, 0, 0, 0);
+    cutoffDate.setDate(cutoffDate.getDate() - 14);
+    const cutoffStr = formatDateForStorage(cutoffDate);
     let hasChanges = false;
 
     Object.keys(state.scheduledSessions).forEach((dateStr) => {
-        if (dateStr < todayStr) {
+        if (dateStr <= cutoffStr) {
             delete state.scheduledSessions[dateStr];
             hasChanges = true;
         }
