@@ -9,17 +9,6 @@ const state = {
 };
 
 
-const sportColors = {
-    running: '#002fa7',
-    cycling: '#1f4eb9',
-    hike_alpi: '#3a67ca',
-    ski_rando: '#567fd9',
-    ski_fond: '#769ae6',
-    climbing: '#9bb8f2',
-    strength: '#ffffff',
-};
-
-
 const categoryLabels = {
     ef: 'EF',
     sv1: 'SV1 Seuil Aérobie- SV2 Anaérobie',
@@ -199,7 +188,8 @@ function createSessionElement(session) {
     div.className = 'session-item';
     div.draggable = true;
     div.dataset.sessionId = session.id;
-    div.dataset.category = session.category;
+    const sessionCategory = session.category || 'other';
+    div.dataset.category = sessionCategory;
     const sessionSport = session.sport || 'running';
     div.dataset.sport = sessionSport;
 
@@ -208,13 +198,7 @@ function createSessionElement(session) {
         <button class="delete-library-btn" title="Supprimer la séance">×</button>
     `;
     if (sessionSport === 'running') {
-        div.dataset.runningIcon = getRunningIconType(session.category);
-    }
-
-    // Set border color based on sport
-    div.style.borderLeftColor = sportColors[sessionSport] || sportColors.running;
-    if (sessionSport === 'strength') {
-        div.style.boxShadow = 'inset 0 0 0 1px #d9e2f2';
+        div.dataset.runningIcon = getRunningIconType(sessionCategory);
     }
 
     // Drag events
@@ -380,9 +364,11 @@ function createDayElement(date, isOtherMonth) {
         if (session) {
             const chipElement = document.createElement('div');
             const sessionSport = session.sport || 'running';
-            chipElement.className = `day-session-chip ${sessionSport}`;
+            const sessionCategory = session.category || 'other';
+            chipElement.className = `day-session-chip ${sessionSport} ${sessionCategory}`;
+            chipElement.dataset.category = sessionCategory;
             if (sessionSport === 'running') {
-                chipElement.dataset.runningIcon = getRunningIconType(session.category);
+                chipElement.dataset.runningIcon = getRunningIconType(sessionCategory);
             }
             chipElement.textContent = session.title;
             chipElement.title = `${session.title}\n${session.comment || ''}`;
@@ -443,9 +429,11 @@ function updateDayDetails() {
         if (session) {
             const div = document.createElement('div');
             const sessionSport = session.sport || 'running';
-            div.className = `session-detail-item ${sessionSport}`;
+            const sessionCategory = session.category || 'other';
+            div.className = `session-detail-item ${sessionSport} ${sessionCategory}`;
+            div.dataset.category = sessionCategory;
             if (sessionSport === 'running') {
-                div.dataset.runningIcon = getRunningIconType(session.category);
+                div.dataset.runningIcon = getRunningIconType(sessionCategory);
             }
             div.innerHTML = `
                 <div class="session-detail-title">${escapeHtml(session.title)}</div>
