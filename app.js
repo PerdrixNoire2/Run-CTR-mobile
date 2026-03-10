@@ -43,6 +43,19 @@ const sportLabels = {
     strength: 'Musculation',
 };
 
+const slowRunningCategories = new Set([
+    'ef',
+    'sv1',
+    'aerobic',
+    'flexibility',
+    'technique',
+    'other',
+]);
+
+function getRunningIconType(category) {
+    return slowRunningCategories.has(category) ? 'slow' : 'fast';
+}
+
 // ============== DOM ELEMENTS ==============
 const elements = {
     sessionTitle: document.getElementById('sessionTitle'),
@@ -187,14 +200,18 @@ function createSessionElement(session) {
     div.draggable = true;
     div.dataset.sessionId = session.id;
     div.dataset.category = session.category;
-    div.dataset.sport = session.sport || 'running';
+    const sessionSport = session.sport || 'running';
+    div.dataset.sport = sessionSport;
 
     div.innerHTML = `
         <div class="session-title">${escapeHtml(session.title)}</div>
         <button class="delete-library-btn" title="Supprimer la séance">×</button>
     `;
+    if (sessionSport === 'running') {
+        div.dataset.runningIcon = getRunningIconType(session.category);
+    }
+
     // Set border color based on sport
-    const sessionSport = session.sport || 'running';
     div.style.borderLeftColor = sportColors[sessionSport] || sportColors.running;
     if (sessionSport === 'strength') {
         div.style.boxShadow = 'inset 0 0 0 1px #d9e2f2';
@@ -364,6 +381,9 @@ function createDayElement(date, isOtherMonth) {
             const chipElement = document.createElement('div');
             const sessionSport = session.sport || 'running';
             chipElement.className = `day-session-chip ${sessionSport}`;
+            if (sessionSport === 'running') {
+                chipElement.dataset.runningIcon = getRunningIconType(session.category);
+            }
             chipElement.textContent = session.title;
             chipElement.title = `${session.title}\n${session.comment || ''}`;
             chipElement.addEventListener('click', () => {
@@ -424,6 +444,9 @@ function updateDayDetails() {
             const div = document.createElement('div');
             const sessionSport = session.sport || 'running';
             div.className = `session-detail-item ${sessionSport}`;
+            if (sessionSport === 'running') {
+                div.dataset.runningIcon = getRunningIconType(session.category);
+            }
             div.innerHTML = `
                 <div class="session-detail-title">${escapeHtml(session.title)}</div>
                 ${session.comment ? `<div class="session-detail-info">${escapeHtml(session.comment)}</div>` : ''}

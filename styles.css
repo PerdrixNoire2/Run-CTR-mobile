@@ -69,8 +69,15 @@
     --technique-color: #60a5fa;
     --other-color: #94a3b8;
 
-    /* Pictogramme course a pied */
+    /* Pictogrammes sport */
     --running-icon-url: url("running-icon.png");
+    --running-slow-icon-url: url("running-slow-icon.png");
+    --cycling-icon-url: url("cycling-icon.png");
+    --alpi-icon-url: url("alpi-icon.png");
+    --skimo-icon-url: url("skimo-icon.png");
+    --nordic-ski-icon-url: url("nordic-ski-icon.png");
+    --climbing-icon-url: url("climbing-icon.png");
+    --muscu-icon-url: url("muscu-icon.png");
 }
 
 body {
@@ -329,13 +336,49 @@ body {
     font-style: italic;
 }
 
-.session-item[data-sport="running"] .session-title::before {
+.session-item[data-sport] {
+    --session-icon-url: none;
+}
+
+.session-item[data-sport="running"] {
+    --session-icon-url: var(--running-icon-url);
+}
+
+.session-item[data-sport="running"][data-running-icon="slow"] {
+    --session-icon-url: var(--running-slow-icon-url);
+}
+
+.session-item[data-sport="cycling"] {
+    --session-icon-url: var(--cycling-icon-url);
+}
+
+.session-item[data-sport="hike_alpi"] {
+    --session-icon-url: var(--alpi-icon-url);
+}
+
+.session-item[data-sport="ski_rando"] {
+    --session-icon-url: var(--skimo-icon-url);
+}
+
+.session-item[data-sport="ski_fond"] {
+    --session-icon-url: var(--nordic-ski-icon-url);
+}
+
+.session-item[data-sport="climbing"] {
+    --session-icon-url: var(--climbing-icon-url);
+}
+
+.session-item[data-sport="strength"] {
+    --session-icon-url: var(--muscu-icon-url);
+}
+
+.session-item[data-sport] .session-title::before {
     content: '';
     display: inline-block;
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
     margin-right: 6px;
-    background: var(--running-icon-url) center / contain no-repeat;
+    background: var(--session-icon-url) center / contain no-repeat;
     vertical-align: -2px;
     opacity: 0.92;
 }
@@ -584,13 +627,49 @@ body {
     box-shadow: inset 0 0 0 1px #d9e2f2;
 }
 
-.day-session-chip.running::before {
+.day-session-chip {
+    --chip-icon-url: none;
+}
+
+.day-session-chip.running {
+    --chip-icon-url: var(--running-icon-url);
+}
+
+.day-session-chip.running[data-running-icon="slow"] {
+    --chip-icon-url: var(--running-slow-icon-url);
+}
+
+.day-session-chip.cycling {
+    --chip-icon-url: var(--cycling-icon-url);
+}
+
+.day-session-chip.hike_alpi {
+    --chip-icon-url: var(--alpi-icon-url);
+}
+
+.day-session-chip.ski_rando {
+    --chip-icon-url: var(--skimo-icon-url);
+}
+
+.day-session-chip.ski_fond {
+    --chip-icon-url: var(--nordic-ski-icon-url);
+}
+
+.day-session-chip.climbing {
+    --chip-icon-url: var(--climbing-icon-url);
+}
+
+.day-session-chip.strength {
+    --chip-icon-url: var(--muscu-icon-url);
+}
+
+.day-session-chip::before {
     content: '';
     display: inline-block;
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     margin-right: 4px;
-    background: var(--running-icon-url) center / contain no-repeat;
+    background: var(--chip-icon-url) center / contain no-repeat;
     vertical-align: -1px;
     opacity: 0.9;
 }
@@ -666,13 +745,49 @@ body {
     margin-bottom: 6px;
 }
 
-.session-detail-item.running .session-detail-title::before {
+.session-detail-item {
+    --detail-icon-url: none;
+}
+
+.session-detail-item.running {
+    --detail-icon-url: var(--running-icon-url);
+}
+
+.session-detail-item.running[data-running-icon="slow"] {
+    --detail-icon-url: var(--running-slow-icon-url);
+}
+
+.session-detail-item.cycling {
+    --detail-icon-url: var(--cycling-icon-url);
+}
+
+.session-detail-item.hike_alpi {
+    --detail-icon-url: var(--alpi-icon-url);
+}
+
+.session-detail-item.ski_rando {
+    --detail-icon-url: var(--skimo-icon-url);
+}
+
+.session-detail-item.ski_fond {
+    --detail-icon-url: var(--nordic-ski-icon-url);
+}
+
+.session-detail-item.climbing {
+    --detail-icon-url: var(--climbing-icon-url);
+}
+
+.session-detail-item.strength {
+    --detail-icon-url: var(--muscu-icon-url);
+}
+
+.session-detail-item .session-detail-title::before {
     content: '';
     display: inline-block;
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 16px;
     margin-right: 7px;
-    background: var(--running-icon-url) center / contain no-repeat;
+    background: var(--detail-icon-url) center / contain no-repeat;
     vertical-align: -2px;
     opacity: 0.92;
 }
