@@ -58,16 +58,16 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 
     /* Couleurs par catégorie */
-    --ef-color: #228B22; /* vert forêt */
-    --sv1-color: #0074D9; /* bleu */
-    --sv2-color: #ff9800; /* orange */
+    --ef-color: #9bb8f2; /* bleu clair (escalade) */
+    --sv1-color: var(--primary-color); /* bleu klein */
+    --sv2-color: #ffb347; /* orange clair */
     --vma-color: #e53935; /* rouge */
-    --aerobic-color: #fbbf24;
-    --sprint-color: #f87171;
-    --force-color: #a78bfa;
-    --flexibility-color: #22c55e;
-    --technique-color: #60a5fa;
-    --other-color: #94a3b8;
+    --aerobic-color: var(--primary-color); /* bleu klein */
+    --sprint-color: #e53935; /* rouge */
+    --force-color: #e53935; /* rouge */
+    --flexibility-color: #fbbf24; /* jaune */
+    --technique-color: #fbbf24; /* jaune */
+    --other-color: #ffffff; /* blanc */
 
     /* Pictogrammes sport */
     --running-icon-url: url("running-icon.png");
@@ -375,8 +375,8 @@ body {
 .session-item[data-sport] .session-title::before {
     content: '';
     display: inline-block;
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 16px;
     margin-right: 6px;
     background: var(--session-icon-url) center / contain no-repeat;
     vertical-align: -2px;
@@ -423,17 +423,7 @@ body {
     border-left: 4px solid var(--other-color);
 }
 
-/* Couleurs par sport pour les etiquettes de seances */
-.session-item[data-sport="running"] { border-left-color: #002fa7; }
-.session-item[data-sport="cycling"] { border-left-color: #1f4eb9; }
-.session-item[data-sport="hike_alpi"] { border-left-color: #3a67ca; }
-.session-item[data-sport="ski_rando"] { border-left-color: #567fd9; }
-.session-item[data-sport="ski_fond"] { border-left-color: #769ae6; }
-.session-item[data-sport="climbing"] { border-left-color: #9bb8f2; }
-.session-item[data-sport="strength"] {
-    border-left-color: #ffffff;
-    box-shadow: inset 0 0 0 1px #d9e2f2;
-}
+
 
 /* ============== CALENDAR ============== */
 .calendar-container {
@@ -592,6 +582,22 @@ body {
     background: var(--border-color);
 }
 
+.day-session-chip.ef {
+    border-left-color: var(--ef-color);
+}
+
+.day-session-chip.sv1 {
+    border-left-color: var(--sv1-color);
+}
+
+.day-session-chip.sv2 {
+    border-left-color: var(--sv2-color);
+}
+
+.day-session-chip.vma {
+    border-left-color: var(--vma-color);
+}
+
 .day-session-chip.aerobic {
     border-left-color: var(--aerobic-color);
 }
@@ -616,16 +622,7 @@ body {
     border-left-color: var(--other-color);
 }
 
-.day-session-chip.running { border-left-color: #002fa7; }
-.day-session-chip.cycling { border-left-color: #1f4eb9; }
-.day-session-chip.hike_alpi { border-left-color: #3a67ca; }
-.day-session-chip.ski_rando { border-left-color: #567fd9; }
-.day-session-chip.ski_fond { border-left-color: #769ae6; }
-.day-session-chip.climbing { border-left-color: #9bb8f2; }
-.day-session-chip.strength {
-    border-left-color: #ffffff;
-    box-shadow: inset 0 0 0 1px #d9e2f2;
-}
+
 
 .day-session-chip {
     --chip-icon-url: none;
@@ -666,8 +663,8 @@ body {
 .day-session-chip::before {
     content: '';
     display: inline-block;
-    width: 13px;
-    height: 13px;
+    width: 14px;
+    height: 14px;
     margin-right: 4px;
     background: var(--chip-icon-url) center / contain no-repeat;
     vertical-align: -1px;
@@ -705,6 +702,22 @@ body {
     box-shadow: var(--shadow);
 }
 
+.session-detail-item.ef {
+    border-left-color: var(--ef-color);
+}
+
+.session-detail-item.sv1 {
+    border-left-color: var(--sv1-color);
+}
+
+.session-detail-item.sv2 {
+    border-left-color: var(--sv2-color);
+}
+
+.session-detail-item.vma {
+    border-left-color: var(--vma-color);
+}
+
 .session-detail-item.aerobic {
     border-left-color: var(--aerobic-color);
 }
@@ -729,16 +742,7 @@ body {
     border-left-color: var(--other-color);
 }
 
-.session-detail-item.running { border-left-color: #002fa7; }
-.session-detail-item.cycling { border-left-color: #1f4eb9; }
-.session-detail-item.hike_alpi { border-left-color: #3a67ca; }
-.session-detail-item.ski_rando { border-left-color: #567fd9; }
-.session-detail-item.ski_fond { border-left-color: #769ae6; }
-.session-detail-item.climbing { border-left-color: #9bb8f2; }
-.session-detail-item.strength {
-    border-left-color: #ffffff;
-    box-shadow: inset 0 0 0 1px #d9e2f2;
-}
+
 
 .session-detail-title {
     font-weight: 700;
@@ -784,8 +788,8 @@ body {
 .session-detail-item .session-detail-title::before {
     content: '';
     display: inline-block;
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
     margin-right: 7px;
     background: var(--detail-icon-url) center / contain no-repeat;
     vertical-align: -2px;
