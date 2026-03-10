@@ -60,7 +60,7 @@
     /* Couleurs par catégorie */
     --ef-color: #9bb8f2; /* bleu clair (escalade) */
     --sv1-color: var(--primary-color); /* bleu klein */
-    --sv2-color: #ffb347; /* orange clair */
+    --sv2-color: #ff9800; /* orange */
     --vma-color: #e53935; /* rouge */
     --aerobic-color: var(--primary-color); /* bleu klein */
     --sprint-color: #e53935; /* rouge */

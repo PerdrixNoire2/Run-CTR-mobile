@@ -11,9 +11,9 @@ const state = {
 
 const categoryLabels = {
     ef: 'EF',
-    sv1: 'SV1 Seuil Aérobie- SV2 Anaérobie',
+    sv1: 'SV1 Seuil Aérobie - SV2 Seuil Anaérobie',
     sv2: 'SV2 Seuil Anaérobie - VMA',
-    vma: 'VMA - Vitesse- VO2max',
+    vma: 'VMA - Vitesse - VO2max',
     aerobic: 'Aérobie',
     sprint: 'Sprint',
     force: 'Force',
@@ -290,8 +290,8 @@ function renderCalendar() {
 
     // Update header
     const monthNames = [
-        'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+        'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
     ];
     elements.monthYear.textContent = `${monthNames[month]} ${year}`;
 
@@ -408,8 +408,8 @@ function updateDayDetails() {
     const date = new Date(state.selectedDay);
     const dayName = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'][date.getDay()];
     const monthNames = [
-        'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+        'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
     ];
     elements.selectedDayTitle.textContent = `${dayName} ${date.getDate()} ${monthNames[date.getMonth()]}`;
 
