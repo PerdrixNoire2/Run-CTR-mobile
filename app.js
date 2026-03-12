@@ -42,18 +42,8 @@ const slowRunningCategories = new Set([
     'other',
 ]);
 
-const defaultDayNote = `Allure spécifique:
-5K: ... : ... min/K
-10K: ... : ...  min/K
-21K: ... : ... min/K
-42K: ... : ... min/K
-
-FC range:
-i1: ... - ... bpm
-i2: ... - ... bpm
-i3: ... - ... bpm
-i4: ... - ... bpm
-i5: ... - ... bpm`;
+const defaultDayNote = `AS 5K: ... : ... '/km | 10K: ... : ... '/km | 21K: ... : ... '/km | 42K: ... : ... '/km
+FC : i1: ... - ... bpm | i2: ... - ... bpm | i3: ... - ... bpm | i4: ... - ... bpm | i5: ... - ... bpm`;
 
 function getRunningIconType(category) {
     return slowRunningCategories.has(category) ? 'slow' : 'fast';
@@ -306,7 +296,11 @@ function updateDayNoteUI() {
     elements.dayNote.style.display = 'block';
     const note = getDayNoteData(state.selectedDay);
     if (elements.dayNoteContent) {
-        elements.dayNoteContent.textContent = note.text;
+        const formatted = note.text
+            .replace(/^AS\b/i, '<strong><em>AS</em></strong>')
+            .replace(/^FC\b/i, '<strong><em>FC</em></strong>')
+            .replace(/\n/g, '<br>');
+        elements.dayNoteContent.innerHTML = formatted;
         elements.dayNoteContent.style.display = note.visible ? 'block' : 'none';
     }
     closeNoteMenus();

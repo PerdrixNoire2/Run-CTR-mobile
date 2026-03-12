@@ -791,6 +791,7 @@ button.library-category-title.library-toggle {
     font-size: 0.75rem;
     color: #4b5563;
     cursor: pointer;
+    font-family: inherit;
 }
 
 .note-menu-item:hover {
@@ -845,6 +846,7 @@ button.library-category-title.library-toggle {
     border-radius: 6px;
     font-size: 0.75rem;
     cursor: pointer;
+    font-family: inherit;
 }
 
 .session-detail-item {
