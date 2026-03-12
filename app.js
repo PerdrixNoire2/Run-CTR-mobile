@@ -141,14 +141,20 @@ function relocateDayDetails() {
 
     const isMobile = window.matchMedia('(max-width: 900px)').matches;
     if (isMobile) {
-        if (dayDetails.parentElement !== sidebar) {
-            if (addSection) {
-                sidebar.insertBefore(dayDetails, addSection);
-            } else if (libraryContainer) {
-                sidebar.insertBefore(dayDetails, libraryContainer);
-            } else {
-                sidebar.insertBefore(dayDetails, sidebarHeader.nextSibling);
+        let referenceNode = null;
+        if (addSection) {
+            referenceNode = addSection.nextSibling;
+        } else if (libraryContainer) {
+            referenceNode = libraryContainer;
+        } else {
+            referenceNode = sidebarHeader.nextSibling;
+        }
+        if (referenceNode) {
+            if (referenceNode !== dayDetails) {
+                sidebar.insertBefore(dayDetails, referenceNode);
             }
+        } else if (dayDetails.parentElement !== sidebar) {
+            sidebar.appendChild(dayDetails);
         }
         return;
     }
