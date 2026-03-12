@@ -125,12 +125,17 @@ function relocateDayDetails() {
     const anchor = document.getElementById('dayDetailsAnchor');
     const sidebar = document.querySelector('.sidebar');
     const sidebarHeader = sidebar?.querySelector('.sidebar-header');
+    const libraryContainer = sidebar?.querySelector('.all-sessions-container');
     if (!dayDetails || !anchor || !sidebar || !sidebarHeader) return;
 
     const isMobile = window.matchMedia('(max-width: 900px)').matches;
     if (isMobile) {
         if (dayDetails.parentElement !== sidebar) {
-            sidebar.insertBefore(dayDetails, sidebarHeader.nextSibling);
+            if (libraryContainer) {
+                sidebar.insertBefore(dayDetails, libraryContainer);
+            } else {
+                sidebar.insertBefore(dayDetails, sidebarHeader.nextSibling);
+            }
         }
         return;
     }

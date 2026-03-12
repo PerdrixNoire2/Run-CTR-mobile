@@ -926,6 +926,7 @@ body {
         max-height: 42vh;
         border-right: none;
         border-bottom: 1px solid var(--border-color);
+        overflow-y: auto;
     }
 
     .sidebar-header {
@@ -1005,6 +1006,11 @@ body {
         margin: 10px 10px 6px;
     }
 
+    .all-sessions-container {
+        flex: 0 0 auto;
+        overflow: visible;
+    }
+
     .session-detail-item {
         padding: 12px;
     }
@@ -1050,6 +1056,8 @@ body {
 
     .all-sessions-container {
         padding: 8px;
+        flex: 0 0 auto;
+        overflow: visible;
     }
 
     .library-category-title {
