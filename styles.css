@@ -961,6 +961,10 @@ button.library-category-title.library-toggle {
 
 /* ============== RESPONSIVE ============== */
 @media (max-width: 900px) {
+    body {
+        background-color: #ffffff;
+    }
+
     .container {
         flex-direction: column;
         height: auto;
