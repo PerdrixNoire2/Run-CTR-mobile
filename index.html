@@ -105,6 +105,28 @@
             <div class="day-details" id="dayDetails">
                 <h3 id="selectedDayTitle">Sélectionner un jour</h3>
                 <div id="daySessionsList" class="day-sessions-list"></div>
+                <div class="day-note" id="dayNote">
+                    <div class="day-note-header">
+                        <span class="day-note-title">Note</span>
+                        <button class="note-menu-btn" id="noteMenuBtn" type="button" aria-label="Options note">⋯</button>
+                        <div class="note-menu" id="noteMenu">
+                            <button class="note-menu-item" type="button" data-action="edit">Modifier</button>
+                            <button class="note-menu-item" type="button" data-action="visibility">Visibilité</button>
+                        </div>
+                    </div>
+                    <div class="note-visibility-menu" id="noteVisibilityMenu">
+                        <button class="note-menu-item" type="button" data-visibility="visible">Visible</button>
+                        <button class="note-menu-item" type="button" data-visibility="hidden">Non visible</button>
+                    </div>
+                    <div class="day-note-content" id="dayNoteContent"></div>
+                    <div class="day-note-editor" id="dayNoteEditor">
+                        <textarea id="dayNoteTextarea" rows="6"></textarea>
+                        <div class="note-editor-actions">
+                            <button class="note-action-btn" id="dayNoteSave" type="button">Save</button>
+                            <button class="note-action-btn" id="dayNoteCancel" type="button">Cancel</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>

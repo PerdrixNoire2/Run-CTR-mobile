@@ -735,6 +735,118 @@ button.library-category-title.library-toggle {
     gap: 10px;
 }
 
+.day-note {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border-color);
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.day-note-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.day-note-title {
+    font-weight: 600;
+    color: #9ca3af;
+}
+
+.note-menu-btn {
+    border: none;
+    background: transparent;
+    color: #9ca3af;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 4px;
+}
+
+.note-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    min-width: 120px;
+    display: none;
+    z-index: 5;
+}
+
+.note-menu.show {
+    display: flex;
+    flex-direction: column;
+}
+
+.note-menu-item {
+    border: none;
+    background: transparent;
+    text-align: left;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    color: #4b5563;
+    cursor: pointer;
+}
+
+.note-menu-item:hover {
+    background: #f3f4f6;
+}
+
+.note-visibility-menu {
+    display: none;
+    margin-top: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.note-visibility-menu.show {
+    display: flex;
+    flex-direction: column;
+}
+
+.day-note-content {
+    margin-top: 6px;
+    white-space: pre-line;
+}
+
+.day-note-editor {
+    display: none;
+    margin-top: 6px;
+}
+
+.day-note-editor textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.75rem;
+    color: #4b5563;
+    padding: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: #ffffff;
+}
+
+.note-editor-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.note-action-btn {
+    border: 1px solid var(--border-color);
+    background: #f3f4f6;
+    color: #4b5563;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
 .session-detail-item {
     background: white;
     padding: 15px;

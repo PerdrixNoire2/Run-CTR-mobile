@@ -3,6 +3,7 @@ const state = {
     currentDate: new Date(),
     sessions: [], // Array of all sessions
     scheduledSessions: {}, // Format: { 'YYYY-MM-DD': [sessionIds] }
+    dayNotes: {}, // Format: { 'YYYY-MM-DD': { text, visible } }
     selectedDay: null,
     draggedSession: null,
     isDragging: false,
@@ -41,6 +42,19 @@ const slowRunningCategories = new Set([
     'other',
 ]);
 
+const defaultDayNote = `Allure spécifique:
+5K: ... : ... min/K
+10K: ... : ...  min/K
+21K: ... : ... min/K
+42K: ... : ... min/K
+
+FC range:
+i1: ... - ... bpm
+i2: ... - ... bpm
+i3: ... - ... bpm
+i4: ... - ... bpm
+i5: ... - ... bpm`;
+
 function getRunningIconType(category) {
     return slowRunningCategories.has(category) ? 'slow' : 'fast';
 }
@@ -59,6 +73,15 @@ const elements = {
     calendarDays: document.getElementById('calendarDays'),
     selectedDayTitle: document.getElementById('selectedDayTitle'),
     daySessionsList: document.getElementById('daySessionsList'),
+    dayNote: document.getElementById('dayNote'),
+    dayNoteContent: document.getElementById('dayNoteContent'),
+    noteMenuBtn: document.getElementById('noteMenuBtn'),
+    noteMenu: document.getElementById('noteMenu'),
+    noteVisibilityMenu: document.getElementById('noteVisibilityMenu'),
+    dayNoteEditor: document.getElementById('dayNoteEditor'),
+    dayNoteTextarea: document.getElementById('dayNoteTextarea'),
+    dayNoteSave: document.getElementById('dayNoteSave'),
+    dayNoteCancel: document.getElementById('dayNoteCancel'),
     sessionModal: document.getElementById('sessionModal'),
     modalBody: document.getElementById('modalBody'),
     deleteSessionBtn: document.getElementById('deleteSessionBtn'),
@@ -119,6 +142,64 @@ function setupEventListeners() {
             libraryToggle.setAttribute('aria-expanded', String(!isCollapsed));
         });
     }
+
+    // Day note menu and editor
+    if (elements.noteMenuBtn) {
+        elements.noteMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (elements.noteMenu && elements.noteMenu.classList.contains('show')) {
+                closeNoteMenus();
+            } else {
+                openNoteMenu();
+            }
+        });
+    }
+
+    if (elements.noteMenu) {
+        elements.noteMenu.addEventListener('click', (e) => {
+            const button = e.target.closest('.note-menu-item');
+            if (!button) return;
+            const action = button.dataset.action;
+            if (action === 'edit') {
+                closeNoteMenus();
+                openNoteEditor();
+            }
+            if (action === 'visibility') {
+                openVisibilityMenu();
+            }
+        });
+    }
+
+    if (elements.noteVisibilityMenu) {
+        elements.noteVisibilityMenu.addEventListener('click', (e) => {
+            const button = e.target.closest('.note-menu-item');
+            if (!button) return;
+            const visibility = button.dataset.visibility;
+            if (!visibility) return;
+            setDayNoteData(state.selectedDay, { visible: visibility === 'visible' });
+            updateDayNoteUI();
+        });
+    }
+
+    if (elements.dayNoteSave) {
+        elements.dayNoteSave.addEventListener('click', () => {
+            const value = elements.dayNoteTextarea?.value ?? '';
+            setDayNoteData(state.selectedDay, { text: value.trim() || defaultDayNote });
+            updateDayNoteUI();
+        });
+    }
+
+    if (elements.dayNoteCancel) {
+        elements.dayNoteCancel.addEventListener('click', () => {
+            closeNoteEditor();
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (elements.dayNote && !elements.dayNote.contains(e.target)) {
+            closeNoteMenus();
+        }
+    });
 }
 
 function setupResponsiveLayout() {
@@ -164,6 +245,72 @@ function relocateDayDetails() {
     if (dayDetails.parentElement !== targetParent || anchor.nextSibling !== dayDetails) {
         targetParent.insertBefore(dayDetails, anchor.nextSibling);
     }
+}
+
+function getDayNoteData(dateStr) {
+    if (!dateStr) return { text: defaultDayNote, visible: true };
+    const existing = state.dayNotes[dateStr];
+    if (!existing) {
+        return { text: defaultDayNote, visible: true };
+    }
+    return {
+        text: existing.text || defaultDayNote,
+        visible: existing.visible !== false,
+    };
+}
+
+function setDayNoteData(dateStr, updates) {
+    if (!dateStr) return;
+    const current = getDayNoteData(dateStr);
+    const next = { ...current, ...updates };
+    state.dayNotes[dateStr] = next;
+    saveToLocalStorage();
+}
+
+function closeNoteMenus() {
+    if (elements.noteMenu) elements.noteMenu.classList.remove('show');
+    if (elements.noteVisibilityMenu) elements.noteVisibilityMenu.classList.remove('show');
+}
+
+function openNoteMenu() {
+    if (!elements.noteMenu) return;
+    closeNoteMenus();
+    elements.noteMenu.classList.add('show');
+}
+
+function openVisibilityMenu() {
+    if (!elements.noteVisibilityMenu) return;
+    closeNoteMenus();
+    elements.noteVisibilityMenu.classList.add('show');
+}
+
+function openNoteEditor() {
+    if (!elements.dayNoteEditor || !elements.dayNoteTextarea) return;
+    const note = getDayNoteData(state.selectedDay);
+    elements.dayNoteTextarea.value = note.text;
+    elements.dayNoteEditor.style.display = 'block';
+}
+
+function closeNoteEditor() {
+    if (elements.dayNoteEditor) {
+        elements.dayNoteEditor.style.display = 'none';
+    }
+}
+
+function updateDayNoteUI() {
+    if (!elements.dayNote) return;
+    if (!state.selectedDay) {
+        elements.dayNote.style.display = 'none';
+        return;
+    }
+    elements.dayNote.style.display = 'block';
+    const note = getDayNoteData(state.selectedDay);
+    if (elements.dayNoteContent) {
+        elements.dayNoteContent.textContent = note.text;
+        elements.dayNoteContent.style.display = note.visible ? 'block' : 'none';
+    }
+    closeNoteMenus();
+    closeNoteEditor();
 }
 
 // ============== SESSION MANAGEMENT ==============
@@ -458,6 +605,7 @@ function updateDayDetails() {
     if (!state.selectedDay) {
         elements.selectedDayTitle.textContent = 'Sélectionner un jour';
         elements.daySessionsList.innerHTML = '';
+        updateDayNoteUI();
         return;
     }
 
@@ -477,28 +625,28 @@ function updateDayDetails() {
         noSessions.textContent = 'Aucune séance planifiée';
         noSessions.style.color = '#9ca3af';
         elements.daySessionsList.appendChild(noSessions);
-        return;
-    }
-
-    sessionIds.forEach((sessionId) => {
-        const session = state.sessions.find((s) => s.id === sessionId);
-        if (session) {
-            const div = document.createElement('div');
-            const sessionSport = session.sport || 'running';
-            const sessionCategory = session.category || 'other';
-            div.className = `session-detail-item ${sessionSport} ${sessionCategory}`;
-            div.dataset.category = sessionCategory;
-            if (sessionSport === 'running') {
-                div.dataset.runningIcon = getRunningIconType(sessionCategory);
+    } else {
+        sessionIds.forEach((sessionId) => {
+            const session = state.sessions.find((s) => s.id === sessionId);
+            if (session) {
+                const div = document.createElement('div');
+                const sessionSport = session.sport || 'running';
+                const sessionCategory = session.category || 'other';
+                div.className = `session-detail-item ${sessionSport} ${sessionCategory}`;
+                div.dataset.category = sessionCategory;
+                if (sessionSport === 'running') {
+                    div.dataset.runningIcon = getRunningIconType(sessionCategory);
+                }
+                div.innerHTML = `
+                    <div class="session-detail-title">${escapeHtml(session.title)}</div>
+                    ${session.comment ? `<div class="session-detail-info">${escapeHtml(session.comment)}</div>` : ''}
+                `;
+                div.addEventListener('click', () => showSessionModal(session, state.selectedDay));
+                elements.daySessionsList.appendChild(div);
             }
-            div.innerHTML = `
-                <div class="session-detail-title">${escapeHtml(session.title)}</div>
-                ${session.comment ? `<div class="session-detail-info">${escapeHtml(session.comment)}</div>` : ''}
-            `;
-            div.addEventListener('click', () => showSessionModal(session, state.selectedDay));
-            elements.daySessionsList.appendChild(div);
-        }
-    });
+        });
+    }
+    updateDayNoteUI();
 }
 
 function selectDay(dayElement) {
@@ -586,6 +734,7 @@ function saveToLocalStorage() {
     const data = {
         sessions: state.sessions,
         scheduledSessions: state.scheduledSessions,
+        dayNotes: state.dayNotes,
     };
     localStorage.setItem('trainingPlatformData', JSON.stringify(data));
 }
@@ -597,6 +746,7 @@ function loadFromLocalStorage() {
             const parsed = JSON.parse(data);
             state.sessions = parsed.sessions || [];
             state.scheduledSessions = parsed.scheduledSessions || {};
+            state.dayNotes = parsed.dayNotes || {};
         } catch (e) {
             console.error('Error loading from localStorage:', e);
         }
