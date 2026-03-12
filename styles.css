@@ -923,10 +923,11 @@ body {
 
     .sidebar {
         width: 100%;
-        max-height: 42vh;
+        max-height: none;
+        height: auto;
         border-right: none;
         border-bottom: 1px solid var(--border-color);
-        overflow-y: auto;
+        overflow: visible;
     }
 
     .sidebar-header {
@@ -1025,7 +1026,8 @@ body {
 
 @media (max-width: 520px) {
     .sidebar {
-        max-height: 46vh;
+        max-height: none;
+        height: auto;
     }
 
     .sidebar-header .toggle-add-btn {
