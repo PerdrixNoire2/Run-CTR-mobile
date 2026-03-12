@@ -1002,6 +1002,7 @@ body {
     .day-details {
         padding: 14px;
         border-radius: 6px;
+        margin: 10px 10px 6px;
     }
 
     .session-detail-item {

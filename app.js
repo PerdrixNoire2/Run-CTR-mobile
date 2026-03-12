@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
     renderSessions();
     setupEventListeners();
+    setupResponsiveLayout();
     selectToday();
     scheduleDailyCleanup();
 });
@@ -108,6 +109,37 @@ function setupEventListeners() {
     elements.sessionModal.addEventListener('click', (e) => {
         if (e.target === elements.sessionModal) closeModal();
     });
+}
+
+function setupResponsiveLayout() {
+    relocateDayDetails();
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(relocateDayDetails, 150);
+    });
+}
+
+function relocateDayDetails() {
+    const dayDetails = document.getElementById('dayDetails');
+    const anchor = document.getElementById('dayDetailsAnchor');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarHeader = sidebar?.querySelector('.sidebar-header');
+    if (!dayDetails || !anchor || !sidebar || !sidebarHeader) return;
+
+    const isMobile = window.matchMedia('(max-width: 900px)').matches;
+    if (isMobile) {
+        if (dayDetails.parentElement !== sidebar) {
+            sidebar.insertBefore(dayDetails, sidebarHeader.nextSibling);
+        }
+        return;
+    }
+
+    const targetParent = anchor.parentElement;
+    if (!targetParent) return;
+    if (dayDetails.parentElement !== targetParent || anchor.nextSibling !== dayDetails) {
+        targetParent.insertBefore(dayDetails, anchor.nextSibling);
+    }
 }
 
 // ============== SESSION MANAGEMENT ==============
