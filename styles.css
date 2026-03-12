@@ -285,25 +285,27 @@ body {
 .library-toggle {
     width: 100%;
     text-align: left;
-    padding: 10px;
-    background: var(--light-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    font-family: inherit;
+    padding: 6px 0 6px 10px;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: #222;
     letter-spacing: 0.01em;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     user-select: none;
 }
 
 .library-toggle .toggle-arrow {
-    font-size: 0.9em;
-    color: #666;
+    font-size: 0.92em;
+    margin-right: 0;
+    color: #888;
+    font-weight: 400;
+    opacity: 0.7;
     transition: transform 0.2s;
 }
 
