@@ -109,6 +109,16 @@ function setupEventListeners() {
     elements.sessionModal.addEventListener('click', (e) => {
         if (e.target === elements.sessionModal) closeModal();
     });
+
+    // Library toggle
+    const libraryToggle = document.getElementById('libraryToggle');
+    const libraryPanel = document.getElementById('libraryPanel');
+    if (libraryToggle && libraryPanel) {
+        libraryToggle.addEventListener('click', () => {
+            const isCollapsed = libraryPanel.classList.toggle('collapsed');
+            libraryToggle.setAttribute('aria-expanded', String(!isCollapsed));
+        });
+    }
 }
 
 function setupResponsiveLayout() {

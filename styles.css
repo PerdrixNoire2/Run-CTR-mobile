@@ -276,6 +276,51 @@ body {
     padding: 10px;
 }
 
+.library-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.library-toggle {
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    background: #f3f4f6;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.library-toggle .toggle-arrow {
+    font-size: 0.9em;
+    color: #666;
+    transition: transform 0.2s;
+}
+
+.library-toggle[aria-expanded="false"] .toggle-arrow {
+    transform: rotate(-90deg);
+}
+
+.library-panel {
+    transition: max-height 0.25s ease;
+}
+
+.library-panel.collapsed {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+}
+
 .sessions-list {
     display: flex;
     flex-direction: column;
@@ -1012,6 +1057,13 @@ body {
         overflow: visible;
     }
 
+    .library-panel {
+        max-height: 40vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
     .session-detail-item {
         padding: 12px;
     }
@@ -1060,6 +1112,13 @@ body {
         padding: 8px;
         flex: 0 0 auto;
         overflow: visible;
+    }
+
+    .library-panel {
+        max-height: 45vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
     }
 
     .library-category-title {

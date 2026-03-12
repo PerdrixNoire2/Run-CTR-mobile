@@ -66,8 +66,13 @@
             </div>
 
             <!-- Liste catégorisée de toutes les séances -->
-            <div class="all-sessions-container">
-                <div id="libraryCategories"></div>
+            <div class="library-section">
+                <button class="library-toggle" id="libraryToggle" aria-expanded="false">
+                    <span class="toggle-arrow">▼</span> Librairie
+                </button>
+                <div class="all-sessions-container library-panel collapsed" id="libraryPanel">
+                    <div id="libraryCategories"></div>
+                </div>
             </div>
         </aside>
 
