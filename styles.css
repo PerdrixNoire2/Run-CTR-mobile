@@ -299,6 +299,8 @@ body {
     align-items: center;
     gap: 7px;
     user-select: none;
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 .library-toggle .toggle-arrow {
@@ -1126,6 +1128,11 @@ body {
     }
 
     .library-category-title {
+        font-size: 0.95rem;
+        padding: 8px 10px;
+    }
+
+    .library-toggle {
         font-size: 0.95rem;
         padding: 8px 10px;
     }
