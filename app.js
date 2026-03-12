@@ -296,9 +296,10 @@ function updateDayNoteUI() {
     elements.dayNote.style.display = 'block';
     const note = getDayNoteData(state.selectedDay);
     if (elements.dayNoteContent) {
-        const formatted = note.text
-            .replace(/^AS\b/i, '<strong><em>AS</em></strong>')
-            .replace(/^FC\b/i, '<strong><em>FC</em></strong>')
+        const safeText = escapeHtml(note.text);
+        const formatted = safeText
+            .replace(/^AS\b/m, '<strong><em>AS</em></strong>')
+            .replace(/^FC\b/m, '<strong><em>FC</em></strong>')
             .replace(/\n/g, '<br>');
         elements.dayNoteContent.innerHTML = formatted;
         elements.dayNoteContent.style.display = note.visible ? 'block' : 'none';
@@ -368,12 +369,6 @@ function renderSessions() {
         title.addEventListener('click', () => {
             list.classList.toggle('collapsed');
             title.classList.toggle('collapsed');
-            const arrow = title.querySelector('.toggle-arrow');
-            if (list.classList.contains('collapsed')) {
-                arrow.textContent = '▶';
-            } else {
-                arrow.textContent = '▼';
-            }
         });
 
         library.appendChild(section);
@@ -741,6 +736,18 @@ function loadFromLocalStorage() {
             state.sessions = parsed.sessions || [];
             state.scheduledSessions = parsed.scheduledSessions || {};
             state.dayNotes = parsed.dayNotes || {};
+            const legacyPattern = /Allure\s+sp[ée]cifique|FC range/i;
+            let migrated = false;
+            Object.keys(state.dayNotes).forEach((dateStr) => {
+                const note = state.dayNotes[dateStr];
+                if (note && typeof note.text === 'string' && legacyPattern.test(note.text)) {
+                    state.dayNotes[dateStr] = { ...note, text: defaultDayNote };
+                    migrated = true;
+                }
+            });
+            if (migrated) {
+                saveToLocalStorage();
+            }
         } catch (e) {
             console.error('Error loading from localStorage:', e);
         }
