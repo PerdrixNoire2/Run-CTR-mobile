@@ -965,6 +965,26 @@ button.library-category-title.library-toggle {
         background-color: #ffffff;
     }
 
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: env(safe-area-inset-top, 0px);
+        background: #ffffff;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .container {
+        background: #ffffff;
+    }
+
+    .sidebar {
+        background: #ffffff;
+    }
+
     .container {
         flex-direction: column;
         height: auto;
