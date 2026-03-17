@@ -1087,8 +1087,6 @@ function updateVolumeEstimate() {
             if (!session) return;
             const distance = getSessionVolume(session);
             const time = getSessionTime(session);
-            if (!distance && !time) return;
-
             const sportKey = session.sport || 'running';
             if (!totals[sportKey]) {
                 totals[sportKey] = {
@@ -1132,6 +1130,8 @@ function updateVolumeEstimate() {
     let totalTimeMax = 0;
     let totalHasKm = false;
     let totalHasTime = false;
+    let totalMissingKm = false;
+    let totalMissingTime = false;
     Object.values(totals).forEach((data) => {
         if (!data) return;
         if (data.hasKm) {
@@ -1144,10 +1144,13 @@ function updateVolumeEstimate() {
             totalTimeMax += data.timeMax;
             totalHasTime = true;
         }
+        if (data.missingKm) totalMissingKm = true;
+        if (data.missingTime) totalMissingTime = true;
     });
 
     if (sportsWithData.length === 0) {
         container.innerHTML = `<p class="volume-estimate-empty">Aucun volume estimé sur ${totalDays} jours.</p>`;
+        if (elements.volumeEstimateTotal) elements.volumeEstimateTotal.innerHTML = '';
         return;
     }
 
@@ -1201,6 +1204,8 @@ function updateVolumeEstimate() {
             const totalTimeText = totalHasTime
                 ? formatDurationRange(totalTimeMin, totalTimeMax)
                 : null;
+            const totalKmIncomplete = totalHasKm && totalMissingKm;
+            const totalTimeIncomplete = totalHasTime && totalMissingTime;
             elements.volumeEstimateTotal.innerHTML = `
                 <div class="volume-estimate-total-row">
                     <span class="volume-estimate-total-label">Total</span>
@@ -1209,12 +1214,14 @@ function updateVolumeEstimate() {
                             <div class="volume-estimate-line">
                                 <span class="volume-estimate-label">DIST</span>
                                 <span class="volume-estimate-value">${escapeHtml(totalKmText)}</span>
+                                ${totalKmIncomplete ? '<span class="volume-estimate-incomplete">incomplet</span>' : ''}
                             </div>
                         ` : ''}
                         ${totalTimeText ? `
                             <div class="volume-estimate-line">
                                 <span class="volume-estimate-label">temps</span>
                                 <span class="volume-estimate-value volume-estimate-time">${escapeHtml(totalTimeText)}</span>
+                                ${totalTimeIncomplete ? '<span class="volume-estimate-incomplete">incomplet</span>' : ''}
                             </div>
                         ` : ''}
                     </div>
