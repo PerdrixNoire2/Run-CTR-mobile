@@ -379,6 +379,27 @@ body {
     color: var(--text-primary);
 }
 
+.volume-estimate-time {
+    color: var(--primary-color);
+}
+
+.volume-estimate-total {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-color);
+}
+
+.volume-estimate-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.volume-estimate-total-label {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
 .btn-primary {
     width: 100%;
     padding: 10px 16px;

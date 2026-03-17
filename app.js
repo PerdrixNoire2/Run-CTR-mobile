@@ -77,6 +77,7 @@ const elements = {
     dayNoteSave: document.getElementById('dayNoteSave'),
     dayNoteCancel: document.getElementById('dayNoteCancel'),
     volumeEstimateContent: document.getElementById('volumeEstimateContent'),
+    volumeEstimateTotal: document.getElementById('volumeEstimateTotal'),
     volumeDaysSelect: document.getElementById('volumeDaysSelect'),
     sessionVolumeRange: document.getElementById('sessionVolumeRange'),
     sessionVolumeValue: document.getElementById('sessionVolumeValue'),
@@ -392,28 +393,23 @@ function parseTimePart(value) {
 function readTimeGroup(prefix, groupKey) {
     const hInput = document.getElementById(`${prefix}${groupKey}H`);
     const mInput = document.getElementById(`${prefix}${groupKey}M`);
-    const sInput = document.getElementById(`${prefix}${groupKey}S`);
 
     const hRaw = hInput?.value ?? '';
     const mRaw = mInput?.value ?? '';
-    const sRaw = sInput?.value ?? '';
-    const hasAny = [hRaw, mRaw, sRaw].some(value => value.toString().trim() !== '');
+    const hasAny = [hRaw, mRaw].some(value => value.toString().trim() !== '');
     if (!hasAny) return null;
 
     const hParsed = parseTimePart(hRaw);
     const mParsed = parseTimePart(mRaw);
-    const sParsed = parseTimePart(sRaw);
 
     if ((hParsed === null && hRaw.toString().trim() !== '') ||
-        (mParsed === null && mRaw.toString().trim() !== '') ||
-        (sParsed === null && sRaw.toString().trim() !== '')) {
+        (mParsed === null && mRaw.toString().trim() !== '')) {
         return null;
     }
 
     const hours = hParsed ?? 0;
     const minutes = mParsed ?? 0;
-    const seconds = sParsed ?? 0;
-    return (hours * 3600) + (minutes * 60) + seconds;
+    return (hours * 3600) + (minutes * 60);
 }
 
 function getTimeFromInputs(prefix) {
@@ -471,27 +467,23 @@ function splitSeconds(totalSeconds) {
     const total = Math.max(0, Math.floor(totalSeconds || 0));
     const hours = Math.floor(total / 3600);
     const minutes = Math.floor((total % 3600) / 60);
-    const seconds = total % 60;
-    return { hours, minutes, seconds };
+    return { hours, minutes };
 }
 
 function setTimeGroup(prefix, groupKey, seconds) {
     const hInput = document.getElementById(`${prefix}${groupKey}H`);
     const mInput = document.getElementById(`${prefix}${groupKey}M`);
-    const sInput = document.getElementById(`${prefix}${groupKey}S`);
-    if (!hInput || !mInput || !sInput) return;
+    if (!hInput || !mInput) return;
 
     if (seconds === null || seconds === undefined || !Number.isFinite(seconds)) {
         hInput.value = '';
         mInput.value = '';
-        sInput.value = '';
         return;
     }
 
     const parts = splitSeconds(seconds);
     hInput.value = String(parts.hours);
     mInput.value = String(parts.minutes);
-    sInput.value = String(parts.seconds);
 }
 
 function initVolumeInputs(prefix, volume, volumeTime) {
@@ -580,10 +572,8 @@ function formatDuration(seconds) {
     const total = Math.max(0, Math.round(seconds || 0));
     const hours = Math.floor(total / 3600);
     const minutes = Math.floor((total % 3600) / 60);
-    const secs = total % 60;
     const mm = String(minutes).padStart(2, '0');
-    const ss = String(secs).padStart(2, '0');
-    return `${hours} h : ${mm} ' : ${ss} "`;
+    return `${hours} h : ${mm} '`;
 }
 
 function formatDurationRange(minSeconds, maxSeconds) {
@@ -1071,12 +1061,14 @@ function updateVolumeEstimate() {
 
     if (!state.selectedDay) {
         container.innerHTML = '<p class="volume-estimate-empty">Sélectionner un jour pour voir le volume estimé.</p>';
+        if (elements.volumeEstimateTotal) elements.volumeEstimateTotal.innerHTML = '';
         return;
     }
 
     const startDate = new Date(state.selectedDay);
     if (Number.isNaN(startDate.getTime())) {
         container.innerHTML = '<p class="volume-estimate-empty">Sélectionner un jour pour voir le volume estimé.</p>';
+        if (elements.volumeEstimateTotal) elements.volumeEstimateTotal.innerHTML = '';
         return;
     }
     startDate.setHours(0, 0, 0, 0);
@@ -1128,6 +1120,26 @@ function updateVolumeEstimate() {
         return data?.hasKm || data?.hasTime;
     });
 
+    let totalKmMin = 0;
+    let totalKmMax = 0;
+    let totalTimeMin = 0;
+    let totalTimeMax = 0;
+    let totalHasKm = false;
+    let totalHasTime = false;
+    Object.values(totals).forEach((data) => {
+        if (!data) return;
+        if (data.hasKm) {
+            totalKmMin += data.kmMin;
+            totalKmMax += data.kmMax;
+            totalHasKm = true;
+        }
+        if (data.hasTime) {
+            totalTimeMin += data.timeMin;
+            totalTimeMax += data.timeMax;
+            totalHasTime = true;
+        }
+    });
+
     if (sportsWithData.length === 0) {
         container.innerHTML = `<p class="volume-estimate-empty">Aucun volume estimé sur ${totalDays} jours.</p>`;
         return;
@@ -1151,14 +1163,14 @@ function updateVolumeEstimate() {
                     <div class="volume-estimate-values">
                         ${kmText ? `
                             <div class="volume-estimate-line">
-                                <span class="volume-estimate-label">km</span>
+                                <span class="volume-estimate-label">dist</span>
                                 <span class="volume-estimate-value">${escapeHtml(kmText)}</span>
                             </div>
                         ` : ''}
                         ${timeText ? `
                             <div class="volume-estimate-line">
                                 <span class="volume-estimate-label">temps</span>
-                                <span class="volume-estimate-value">${escapeHtml(timeText)}</span>
+                                <span class="volume-estimate-value volume-estimate-time">${escapeHtml(timeText)}</span>
                             </div>
                         ` : ''}
                     </div>
@@ -1166,6 +1178,40 @@ function updateVolumeEstimate() {
             `;
         })
         .join('');
+
+    if (elements.volumeEstimateTotal) {
+        if (!totalHasKm && !totalHasTime) {
+            elements.volumeEstimateTotal.innerHTML = '';
+        } else {
+            const totalKmText = totalHasKm
+                ? (totalKmMin === totalKmMax
+                    ? `${formatVolumeNumber(totalKmMin)} km`
+                    : `${formatVolumeNumber(totalKmMin)} - ${formatVolumeNumber(totalKmMax)} km`)
+                : null;
+            const totalTimeText = totalHasTime
+                ? formatDurationRange(totalTimeMin, totalTimeMax)
+                : null;
+            elements.volumeEstimateTotal.innerHTML = `
+                <div class="volume-estimate-total-row">
+                    <span class="volume-estimate-total-label">Total</span>
+                    <div class="volume-estimate-values">
+                        ${totalKmText ? `
+                            <div class="volume-estimate-line">
+                                <span class="volume-estimate-label">dist</span>
+                                <span class="volume-estimate-value">${escapeHtml(totalKmText)}</span>
+                            </div>
+                        ` : ''}
+                        ${totalTimeText ? `
+                            <div class="volume-estimate-line">
+                                <span class="volume-estimate-label">temps</span>
+                                <span class="volume-estimate-value volume-estimate-time">${escapeHtml(totalTimeText)}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+    }
 }
 
 function selectDay(dayElement) {
