@@ -1098,6 +1098,8 @@ function updateVolumeEstimate() {
                     timeMax: 0,
                     hasKm: false,
                     hasTime: false,
+                    missingKm: false,
+                    missingTime: false,
                 };
             }
 
@@ -1105,11 +1107,15 @@ function updateVolumeEstimate() {
                 totals[sportKey].kmMin += distance.min;
                 totals[sportKey].kmMax += distance.max;
                 totals[sportKey].hasKm = true;
+            } else {
+                totals[sportKey].missingKm = true;
             }
             if (time) {
                 totals[sportKey].timeMin += time.min;
                 totals[sportKey].timeMax += time.max;
                 totals[sportKey].hasTime = true;
+            } else {
+                totals[sportKey].missingTime = true;
             }
         });
     }
@@ -1157,20 +1163,24 @@ function updateVolumeEstimate() {
             const timeText = data.hasTime
                 ? formatDurationRange(data.timeMin, data.timeMax)
                 : null;
+            const kmIncomplete = data.hasKm && data.missingKm;
+            const timeIncomplete = data.hasTime && data.missingTime;
             return `
                 <div class="volume-estimate-row">
                     <span class="volume-estimate-sport">${escapeHtml(label)}</span>
                     <div class="volume-estimate-values">
                         ${kmText ? `
                             <div class="volume-estimate-line">
-                                <span class="volume-estimate-label">dist</span>
+                                <span class="volume-estimate-label">DIST</span>
                                 <span class="volume-estimate-value">${escapeHtml(kmText)}</span>
+                                ${kmIncomplete ? '<span class="volume-estimate-incomplete">incomplet</span>' : ''}
                             </div>
                         ` : ''}
                         ${timeText ? `
                             <div class="volume-estimate-line">
                                 <span class="volume-estimate-label">temps</span>
                                 <span class="volume-estimate-value volume-estimate-time">${escapeHtml(timeText)}</span>
+                                ${timeIncomplete ? '<span class="volume-estimate-incomplete">incomplet</span>' : ''}
                             </div>
                         ` : ''}
                     </div>
@@ -1197,7 +1207,7 @@ function updateVolumeEstimate() {
                     <div class="volume-estimate-values">
                         ${totalKmText ? `
                             <div class="volume-estimate-line">
-                                <span class="volume-estimate-label">dist</span>
+                                <span class="volume-estimate-label">DIST</span>
                                 <span class="volume-estimate-value">${escapeHtml(totalKmText)}</span>
                             </div>
                         ` : ''}

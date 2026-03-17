@@ -383,6 +383,14 @@ body {
     color: var(--primary-color);
 }
 
+.volume-estimate-incomplete {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    font-style: italic;
+    margin-left: 6px;
+    text-transform: lowercase;
+}
+
 .volume-estimate-total {
     margin-top: 12px;
     padding-top: 10px;
