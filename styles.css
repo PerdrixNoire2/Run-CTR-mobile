@@ -226,6 +226,12 @@ body {
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.1;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -247,6 +253,12 @@ body {
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.1;
     transition: all 0.2s;
 }
 
@@ -263,6 +275,12 @@ body {
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.1;
     transition: all 0.2s;
 }
 
