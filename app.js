@@ -10,6 +10,7 @@ const state = {
     activeModalSessionId: null,
     activeModalDateStr: null,
     isEditingSession: false,
+    volumeDays: 7,
 };
 
 
@@ -76,6 +77,7 @@ const elements = {
     dayNoteSave: document.getElementById('dayNoteSave'),
     dayNoteCancel: document.getElementById('dayNoteCancel'),
     volumeEstimateContent: document.getElementById('volumeEstimateContent'),
+    volumeDaysSelect: document.getElementById('volumeDaysSelect'),
     sessionVolumeRange: document.getElementById('sessionVolumeRange'),
     sessionVolumeValue: document.getElementById('sessionVolumeValue'),
     sessionVolumeMin: document.getElementById('sessionVolumeMin'),
@@ -213,6 +215,28 @@ function setupEventListeners() {
     });
 
     initVolumeInputs('session');
+    setupVolumeDaysSelect();
+}
+
+function setupVolumeDaysSelect() {
+    const select = elements.volumeDaysSelect;
+    if (!select) return;
+    select.innerHTML = '';
+    for (let days = 2; days <= 31; days += 1) {
+        const option = document.createElement('option');
+        option.value = String(days);
+        option.textContent = String(days);
+        if (days === state.volumeDays) option.selected = true;
+        select.appendChild(option);
+    }
+    select.addEventListener('change', () => {
+        const next = parseInt(select.value, 10);
+        if (!Number.isNaN(next)) {
+            state.volumeDays = Math.min(31, Math.max(2, next));
+            saveToLocalStorage();
+            updateVolumeEstimate();
+        }
+    });
 }
 
 function setupResponsiveLayout() {
@@ -896,8 +920,9 @@ function updateVolumeEstimate() {
 
     const sessionMap = new Map(state.sessions.map(session => [session.id, session]));
     const totals = {};
+    const totalDays = Math.min(31, Math.max(2, state.volumeDays || 7));
 
-    for (let i = 0; i < 7; i += 1) {
+    for (let i = 0; i < totalDays; i += 1) {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + i);
         const dateStr = formatDateForStorage(date);
@@ -921,7 +946,7 @@ function updateVolumeEstimate() {
     const sportsWithData = orderedSports.filter((sport) => totals[sport]?.has);
 
     if (sportsWithData.length === 0) {
-        container.innerHTML = '<p class="volume-estimate-empty">Aucun volume estimé sur 7 jours.</p>';
+        container.innerHTML = `<p class="volume-estimate-empty">Aucun volume estimé sur ${totalDays} jours.</p>`;
         return;
     }
 
@@ -1046,6 +1071,7 @@ function saveToLocalStorage() {
         sessions: state.sessions,
         scheduledSessions: state.scheduledSessions,
         dayNotes: state.dayNotes,
+        volumeDays: state.volumeDays,
     };
     localStorage.setItem('trainingPlatformData', JSON.stringify(data));
 }
@@ -1058,6 +1084,9 @@ function loadFromLocalStorage() {
             state.sessions = parsed.sessions || [];
             state.scheduledSessions = parsed.scheduledSessions || {};
             state.dayNotes = parsed.dayNotes || {};
+            if (typeof parsed.volumeDays === 'number') {
+                state.volumeDays = Math.min(31, Math.max(2, parsed.volumeDays));
+            }
             const legacyPattern = /Allure\s+sp[ée]cifique|FC range/i;
             let migrated = false;
             Object.keys(state.dayNotes).forEach((dateStr) => {
