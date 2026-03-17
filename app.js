@@ -75,6 +75,11 @@ const elements = {
     dayNoteTextarea: document.getElementById('dayNoteTextarea'),
     dayNoteSave: document.getElementById('dayNoteSave'),
     dayNoteCancel: document.getElementById('dayNoteCancel'),
+    volumeEstimateContent: document.getElementById('volumeEstimateContent'),
+    sessionVolumeRange: document.getElementById('sessionVolumeRange'),
+    sessionVolumeValue: document.getElementById('sessionVolumeValue'),
+    sessionVolumeMin: document.getElementById('sessionVolumeMin'),
+    sessionVolumeMax: document.getElementById('sessionVolumeMax'),
     sessionModal: document.getElementById('sessionModal'),
     modalBody: document.getElementById('modalBody'),
     deleteSessionBtn: document.getElementById('deleteSessionBtn'),
@@ -206,6 +211,8 @@ function setupEventListeners() {
             closeNoteMenus();
         }
     });
+
+    initVolumeInputs('session');
 }
 
 function setupResponsiveLayout() {
@@ -342,6 +349,106 @@ function buildSportOptions(selected) {
         .join('');
 }
 
+function parseVolumeInput(value) {
+    if (!value) return null;
+    const normalized = value.toString().replace(',', '.').trim();
+    if (!normalized) return null;
+    const num = parseFloat(normalized);
+    return Number.isFinite(num) ? num : null;
+}
+
+function formatVolumeForInput(value) {
+    if (!Number.isFinite(value)) return '';
+    const str = value.toString();
+    return str.includes('.') ? str.replace('.', ',') : str;
+}
+
+function getVolumeFromInputs(prefix) {
+    const isRange = document.getElementById(`${prefix}VolumeRange`)?.checked;
+    if (isRange) {
+        let min = parseVolumeInput(document.getElementById(`${prefix}VolumeMin`)?.value || '');
+        let max = parseVolumeInput(document.getElementById(`${prefix}VolumeMax`)?.value || '');
+        if (min === null && max === null) return null;
+        if (min === null) min = max;
+        if (max === null) max = min;
+        if (min > max) [min, max] = [max, min];
+        return { type: 'range', min, max };
+    }
+
+    const value = parseVolumeInput(document.getElementById(`${prefix}VolumeValue`)?.value || '');
+    if (value === null) return null;
+    return { type: 'fixed', value };
+}
+
+function setVolumeInputsVisibility(prefix, isRange) {
+    const fixed = document.getElementById(`${prefix}VolumeFixed`);
+    const range = document.getElementById(`${prefix}VolumeRangeFields`);
+    if (fixed) {
+        fixed.classList.toggle('is-hidden', isRange);
+    }
+    if (range) {
+        range.classList.toggle('is-hidden', !isRange);
+    }
+}
+
+function initVolumeInputs(prefix, volume) {
+    const toggle = document.getElementById(`${prefix}VolumeRange`);
+    if (!toggle) return;
+
+    const isRange = volume?.type === 'range';
+    toggle.checked = isRange;
+    setVolumeInputsVisibility(prefix, isRange);
+
+    const fixedValue = volume?.type === 'fixed' ? formatVolumeForInput(volume.value) : '';
+    const minValue = volume?.type === 'range' ? formatVolumeForInput(volume.min) : '';
+    const maxValue = volume?.type === 'range' ? formatVolumeForInput(volume.max) : '';
+
+    const fixedInput = document.getElementById(`${prefix}VolumeValue`);
+    const minInput = document.getElementById(`${prefix}VolumeMin`);
+    const maxInput = document.getElementById(`${prefix}VolumeMax`);
+
+    if (fixedInput) fixedInput.value = fixedValue;
+    if (minInput) minInput.value = minValue;
+    if (maxInput) maxInput.value = maxValue;
+
+    toggle.onchange = () => {
+        setVolumeInputsVisibility(prefix, toggle.checked);
+    };
+}
+
+function formatVolumeNumber(value) {
+    if (!Number.isFinite(value)) return '';
+    return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(value);
+}
+
+function getSessionVolume(session) {
+    if (!session?.volume) return null;
+    if (session.volume.type === 'fixed') {
+        const value = Number(session.volume.value);
+        if (!Number.isFinite(value)) return null;
+        return { min: value, max: value };
+    }
+    if (session.volume.type === 'range') {
+        let min = Number(session.volume.min);
+        let max = Number(session.volume.max);
+        if (!Number.isFinite(min) && !Number.isFinite(max)) return null;
+        if (!Number.isFinite(min)) min = max;
+        if (!Number.isFinite(max)) max = min;
+        if (min > max) [min, max] = [max, min];
+        return { min, max };
+    }
+    return null;
+}
+
+function formatSessionVolumeText(session) {
+    const volume = getSessionVolume(session);
+    if (!volume) return 'Non renseigné';
+    if (volume.min === volume.max) {
+        return `${formatVolumeNumber(volume.min)} km`;
+    }
+    return `${formatVolumeNumber(volume.min)} - ${formatVolumeNumber(volume.max)} km`;
+}
+
 function openSessionEditForm(session) {
     state.isEditingSession = true;
     elements.modalBody.innerHTML = `
@@ -357,12 +464,35 @@ function openSessionEditForm(session) {
         <select id="editSessionSport" class="input-field">
             ${buildSportOptions(session.sport)}
         </select>
+        <label class="modal-label">Volume estimé (optionnel)</label>
+        <div class="volume-field">
+            <div class="volume-field-header">
+                <span class="volume-label">Volume estimé</span>
+                <div class="volume-toggle">
+                    <span class="volume-toggle-label">Fixe</span>
+                    <label class="switch">
+                        <input type="checkbox" id="editSessionVolumeRange">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="volume-toggle-label">Plage</span>
+                </div>
+            </div>
+            <div class="volume-inputs" id="editSessionVolumeFixed">
+                <input type="text" id="editSessionVolumeValue" class="input-field volume-input" placeholder="km" inputmode="decimal">
+            </div>
+            <div class="volume-inputs is-hidden" id="editSessionVolumeRangeFields">
+                <input type="text" id="editSessionVolumeMin" class="input-field volume-input" placeholder="min km" inputmode="decimal">
+                <input type="text" id="editSessionVolumeMax" class="input-field volume-input" placeholder="max km" inputmode="decimal">
+            </div>
+        </div>
     `;
 
     elements.deleteSessionBtn.style.display = 'none';
     if (elements.editSessionBtn) elements.editSessionBtn.style.display = 'none';
     if (elements.saveSessionBtn) elements.saveSessionBtn.style.display = 'inline-flex';
     elements.closeModalBtn.textContent = 'Annuler';
+
+    initVolumeInputs('editSession', session.volume);
 }
 
 function saveEditedSession() {
@@ -379,6 +509,7 @@ function saveEditedSession() {
     session.comment = document.getElementById('editSessionComment')?.value.trim() || '';
     session.category = document.getElementById('editSessionCategory')?.value || 'other';
     session.sport = document.getElementById('editSessionSport')?.value || 'running';
+    session.volume = getVolumeFromInputs('editSession');
 
     saveToLocalStorage();
     renderSessions();
@@ -400,6 +531,7 @@ function addSession() {
     const comment = elements.sessionComment.value.trim();
     const category = elements.sessionCategory.value || 'other';
     const sport = elements.sessionSport.value || 'running';
+    const volume = getVolumeFromInputs('session');
 
     if (!title) {
         alert('Veuillez entrer un titre pour la séance');
@@ -412,6 +544,7 @@ function addSession() {
         comment,
         category,
         sport,
+        volume,
         dateAdded: new Date().toISOString(),
     };
 
@@ -424,6 +557,7 @@ function addSession() {
     elements.sessionComment.value = '';
     elements.sessionCategory.value = '';
     elements.sessionSport.value = 'running';
+    initVolumeInputs('session');
     elements.sessionTitle.focus();
 }
 
@@ -699,6 +833,7 @@ function updateDayDetails() {
         elements.selectedDayTitle.textContent = 'Sélectionner un jour';
         elements.daySessionsList.innerHTML = '';
         updateDayNoteUI();
+        updateVolumeEstimate();
         return;
     }
 
@@ -740,6 +875,71 @@ function updateDayDetails() {
         });
     }
     updateDayNoteUI();
+    updateVolumeEstimate();
+}
+
+function updateVolumeEstimate() {
+    const container = elements.volumeEstimateContent;
+    if (!container) return;
+
+    if (!state.selectedDay) {
+        container.innerHTML = '<p class="volume-estimate-empty">Sélectionner un jour pour voir le volume estimé.</p>';
+        return;
+    }
+
+    const startDate = new Date(state.selectedDay);
+    if (Number.isNaN(startDate.getTime())) {
+        container.innerHTML = '<p class="volume-estimate-empty">Sélectionner un jour pour voir le volume estimé.</p>';
+        return;
+    }
+    startDate.setHours(0, 0, 0, 0);
+
+    const sessionMap = new Map(state.sessions.map(session => [session.id, session]));
+    const totals = {};
+
+    for (let i = 0; i < 7; i += 1) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        const dateStr = formatDateForStorage(date);
+        const sessionIds = state.scheduledSessions[dateStr] || [];
+        sessionIds.forEach((sessionId) => {
+            const session = sessionMap.get(sessionId);
+            if (!session) return;
+            const volume = getSessionVolume(session);
+            if (!volume) return;
+            const sportKey = session.sport || 'running';
+            if (!totals[sportKey]) {
+                totals[sportKey] = { min: 0, max: 0, has: false };
+            }
+            totals[sportKey].min += volume.min;
+            totals[sportKey].max += volume.max;
+            totals[sportKey].has = true;
+        });
+    }
+
+    const orderedSports = Object.keys(sportLabels);
+    const sportsWithData = orderedSports.filter((sport) => totals[sport]?.has);
+
+    if (sportsWithData.length === 0) {
+        container.innerHTML = '<p class="volume-estimate-empty">Aucun volume estimé sur 7 jours.</p>';
+        return;
+    }
+
+    container.innerHTML = sportsWithData
+        .map((sportKey) => {
+            const data = totals[sportKey];
+            const label = getSportLabel(sportKey);
+            const valueText = data.min === data.max
+                ? `${formatVolumeNumber(data.min)} km`
+                : `${formatVolumeNumber(data.min)} - ${formatVolumeNumber(data.max)} km`;
+            return `
+                <div class="volume-estimate-row">
+                    <span>${escapeHtml(label)}</span>
+                    <span class="volume-estimate-value">${escapeHtml(valueText)}</span>
+                </div>
+            `;
+        })
+        .join('');
 }
 
 function selectDay(dayElement) {
@@ -775,6 +975,7 @@ function showSessionLibraryModal(session) {
         <p><strong>Titre:</strong> ${escapeHtml(session.title)}</p>
         <p><strong>Catégorie:</strong> ${categoryLabels[session.category]}</p>
         <p><strong>Sport:</strong> ${escapeHtml(getSportLabel(session.sport))}</p>
+        <p><strong>Volume estimé:</strong> ${escapeHtml(formatSessionVolumeText(session))}</p>
         ${session.comment ? `<p><strong>Commentaire:</strong> ${escapeHtml(session.comment)}</p>` : ''}
     `;
 
@@ -795,6 +996,7 @@ function showSessionModal(session, dateStr) {
         <p><strong>Titre:</strong> ${escapeHtml(session.title)}</p>
         <p><strong>Catégorie:</strong> ${categoryLabels[session.category]}</p>
         <p><strong>Sport:</strong> ${escapeHtml(getSportLabel(session.sport))}</p>
+        <p><strong>Volume estimé:</strong> ${escapeHtml(formatSessionVolumeText(session))}</p>
         ${session.comment ? `<p><strong>Commentaire:</strong> ${escapeHtml(session.comment)}</p>` : ''}
         <p><strong>Date:</strong> ${new Date(dateStr).toLocaleDateString('fr-FR')}</p>
     `;
