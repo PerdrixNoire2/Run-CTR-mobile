@@ -1111,6 +1111,10 @@ button.library-category-title.library-toggle {
     color: var(--text-primary);
 }
 
+.volume-estimate-value.volume-estimate-time {
+    color: var(--primary-color);
+}
+
 .volume-estimate-empty {
     color: #9ca3af;
     font-size: 0.85rem;
