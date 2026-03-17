@@ -381,6 +381,58 @@ function parseVolumeInput(value) {
     return Number.isFinite(num) ? num : null;
 }
 
+function parseTimePart(value) {
+    const trimmed = value?.toString().trim() ?? '';
+    if (!trimmed) return null;
+    const num = parseInt(trimmed, 10);
+    if (!Number.isFinite(num)) return null;
+    return Math.max(0, num);
+}
+
+function readTimeGroup(prefix, groupKey) {
+    const hInput = document.getElementById(`${prefix}${groupKey}H`);
+    const mInput = document.getElementById(`${prefix}${groupKey}M`);
+    const sInput = document.getElementById(`${prefix}${groupKey}S`);
+
+    const hRaw = hInput?.value ?? '';
+    const mRaw = mInput?.value ?? '';
+    const sRaw = sInput?.value ?? '';
+    const hasAny = [hRaw, mRaw, sRaw].some(value => value.toString().trim() !== '');
+    if (!hasAny) return null;
+
+    const hParsed = parseTimePart(hRaw);
+    const mParsed = parseTimePart(mRaw);
+    const sParsed = parseTimePart(sRaw);
+
+    if ((hParsed === null && hRaw.toString().trim() !== '') ||
+        (mParsed === null && mRaw.toString().trim() !== '') ||
+        (sParsed === null && sRaw.toString().trim() !== '')) {
+        return null;
+    }
+
+    const hours = hParsed ?? 0;
+    const minutes = mParsed ?? 0;
+    const seconds = sParsed ?? 0;
+    return (hours * 3600) + (minutes * 60) + seconds;
+}
+
+function getTimeFromInputs(prefix) {
+    const isRange = document.getElementById(`${prefix}VolumeRange`)?.checked;
+    if (isRange) {
+        let minSeconds = readTimeGroup(prefix, 'TimeMin');
+        let maxSeconds = readTimeGroup(prefix, 'TimeMax');
+        if (minSeconds === null && maxSeconds === null) return null;
+        if (minSeconds === null) minSeconds = maxSeconds;
+        if (maxSeconds === null) maxSeconds = minSeconds;
+        if (minSeconds > maxSeconds) [minSeconds, maxSeconds] = [maxSeconds, minSeconds];
+        return { type: 'range', minSeconds, maxSeconds };
+    }
+
+    const seconds = readTimeGroup(prefix, 'Time');
+    if (seconds === null) return null;
+    return { type: 'fixed', seconds };
+}
+
 function formatVolumeForInput(value) {
     if (!Number.isFinite(value)) return '';
     const str = value.toString();
@@ -415,11 +467,38 @@ function setVolumeInputsVisibility(prefix, isRange) {
     }
 }
 
-function initVolumeInputs(prefix, volume) {
+function splitSeconds(totalSeconds) {
+    const total = Math.max(0, Math.floor(totalSeconds || 0));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    return { hours, minutes, seconds };
+}
+
+function setTimeGroup(prefix, groupKey, seconds) {
+    const hInput = document.getElementById(`${prefix}${groupKey}H`);
+    const mInput = document.getElementById(`${prefix}${groupKey}M`);
+    const sInput = document.getElementById(`${prefix}${groupKey}S`);
+    if (!hInput || !mInput || !sInput) return;
+
+    if (seconds === null || seconds === undefined || !Number.isFinite(seconds)) {
+        hInput.value = '';
+        mInput.value = '';
+        sInput.value = '';
+        return;
+    }
+
+    const parts = splitSeconds(seconds);
+    hInput.value = String(parts.hours);
+    mInput.value = String(parts.minutes);
+    sInput.value = String(parts.seconds);
+}
+
+function initVolumeInputs(prefix, volume, volumeTime) {
     const toggle = document.getElementById(`${prefix}VolumeRange`);
     if (!toggle) return;
 
-    const isRange = volume?.type === 'range';
+    const isRange = volume?.type === 'range' || volumeTime?.type === 'range';
     toggle.checked = isRange;
     setVolumeInputsVisibility(prefix, isRange);
 
@@ -434,6 +513,20 @@ function initVolumeInputs(prefix, volume) {
     if (fixedInput) fixedInput.value = fixedValue;
     if (minInput) minInput.value = minValue;
     if (maxInput) maxInput.value = maxValue;
+
+    if (volumeTime?.type === 'fixed') {
+        setTimeGroup(prefix, 'Time', volumeTime.seconds);
+        setTimeGroup(prefix, 'TimeMin', null);
+        setTimeGroup(prefix, 'TimeMax', null);
+    } else if (volumeTime?.type === 'range') {
+        setTimeGroup(prefix, 'Time', null);
+        setTimeGroup(prefix, 'TimeMin', volumeTime.minSeconds);
+        setTimeGroup(prefix, 'TimeMax', volumeTime.maxSeconds);
+    } else {
+        setTimeGroup(prefix, 'Time', null);
+        setTimeGroup(prefix, 'TimeMin', null);
+        setTimeGroup(prefix, 'TimeMax', null);
+    }
 
     toggle.onchange = () => {
         setVolumeInputsVisibility(prefix, toggle.checked);
@@ -462,6 +555,47 @@ function getSessionVolume(session) {
         return { min, max };
     }
     return null;
+}
+
+function getSessionTime(session) {
+    if (!session?.volumeTime) return null;
+    if (session.volumeTime.type === 'fixed') {
+        const seconds = Number(session.volumeTime.seconds);
+        if (!Number.isFinite(seconds)) return null;
+        return { min: seconds, max: seconds };
+    }
+    if (session.volumeTime.type === 'range') {
+        let min = Number(session.volumeTime.minSeconds);
+        let max = Number(session.volumeTime.maxSeconds);
+        if (!Number.isFinite(min) && !Number.isFinite(max)) return null;
+        if (!Number.isFinite(min)) min = max;
+        if (!Number.isFinite(max)) max = min;
+        if (min > max) [min, max] = [max, min];
+        return { min, max };
+    }
+    return null;
+}
+
+function formatDuration(seconds) {
+    const total = Math.max(0, Math.round(seconds || 0));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const secs = total % 60;
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(secs).padStart(2, '0');
+    return `${hours} h : ${mm} ' : ${ss} "`;
+}
+
+function formatDurationRange(minSeconds, maxSeconds) {
+    if (!Number.isFinite(minSeconds) || !Number.isFinite(maxSeconds)) return 'Non renseigné';
+    if (minSeconds === maxSeconds) return formatDuration(minSeconds);
+    return `${formatDuration(minSeconds)} - ${formatDuration(maxSeconds)}`;
+}
+
+function formatSessionTimeText(session) {
+    const time = getSessionTime(session);
+    if (!time) return 'Non renseigné';
+    return formatDurationRange(time.min, time.max);
 }
 
 function formatSessionVolumeText(session) {
@@ -503,10 +637,36 @@ function openSessionEditForm(session) {
             </div>
             <div class="volume-inputs" id="editSessionVolumeFixed">
                 <input type="text" id="editSessionVolumeValue" class="input-field volume-input" placeholder="km" inputmode="decimal">
+                <div class="volume-time-group">
+                    <input type="text" id="editSessionTimeH" class="input-field volume-time-input" placeholder="h" inputmode="numeric">
+                    <span class="volume-time-sep">:</span>
+                    <input type="text" id="editSessionTimeM" class="input-field volume-time-input" placeholder="min" inputmode="numeric">
+                    <span class="volume-time-sep">:</span>
+                    <input type="text" id="editSessionTimeS" class="input-field volume-time-input" placeholder="sec" inputmode="numeric">
+                </div>
             </div>
             <div class="volume-inputs is-hidden" id="editSessionVolumeRangeFields">
-                <input type="text" id="editSessionVolumeMin" class="input-field volume-input" placeholder="min km" inputmode="decimal">
-                <input type="text" id="editSessionVolumeMax" class="input-field volume-input" placeholder="max km" inputmode="decimal">
+                <div class="volume-distance-range">
+                    <input type="text" id="editSessionVolumeMin" class="input-field volume-input" placeholder="min km" inputmode="decimal">
+                    <input type="text" id="editSessionVolumeMax" class="input-field volume-input" placeholder="max km" inputmode="decimal">
+                </div>
+                <div class="volume-time-range">
+                    <div class="volume-time-group">
+                        <input type="text" id="editSessionTimeMinH" class="input-field volume-time-input" placeholder="h" inputmode="numeric">
+                        <span class="volume-time-sep">:</span>
+                        <input type="text" id="editSessionTimeMinM" class="input-field volume-time-input" placeholder="min" inputmode="numeric">
+                        <span class="volume-time-sep">:</span>
+                        <input type="text" id="editSessionTimeMinS" class="input-field volume-time-input" placeholder="sec" inputmode="numeric">
+                    </div>
+                    <span class="volume-time-range-sep">-</span>
+                    <div class="volume-time-group">
+                        <input type="text" id="editSessionTimeMaxH" class="input-field volume-time-input" placeholder="h" inputmode="numeric">
+                        <span class="volume-time-sep">:</span>
+                        <input type="text" id="editSessionTimeMaxM" class="input-field volume-time-input" placeholder="min" inputmode="numeric">
+                        <span class="volume-time-sep">:</span>
+                        <input type="text" id="editSessionTimeMaxS" class="input-field volume-time-input" placeholder="sec" inputmode="numeric">
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -516,7 +676,7 @@ function openSessionEditForm(session) {
     if (elements.saveSessionBtn) elements.saveSessionBtn.style.display = 'inline-flex';
     elements.closeModalBtn.textContent = 'Annuler';
 
-    initVolumeInputs('editSession', session.volume);
+    initVolumeInputs('editSession', session.volume, session.volumeTime);
 }
 
 function saveEditedSession() {
@@ -534,6 +694,7 @@ function saveEditedSession() {
     session.category = document.getElementById('editSessionCategory')?.value || 'other';
     session.sport = document.getElementById('editSessionSport')?.value || 'running';
     session.volume = getVolumeFromInputs('editSession');
+    session.volumeTime = getTimeFromInputs('editSession');
 
     saveToLocalStorage();
     renderSessions();
@@ -556,6 +717,7 @@ function addSession() {
     const category = elements.sessionCategory.value || 'other';
     const sport = elements.sessionSport.value || 'running';
     const volume = getVolumeFromInputs('session');
+    const volumeTime = getTimeFromInputs('session');
 
     if (!title) {
         alert('Veuillez entrer un titre pour la séance');
@@ -569,6 +731,7 @@ function addSession() {
         category,
         sport,
         volume,
+        volumeTime,
         dateAdded: new Date().toISOString(),
     };
 
@@ -930,20 +1093,40 @@ function updateVolumeEstimate() {
         sessionIds.forEach((sessionId) => {
             const session = sessionMap.get(sessionId);
             if (!session) return;
-            const volume = getSessionVolume(session);
-            if (!volume) return;
+            const distance = getSessionVolume(session);
+            const time = getSessionTime(session);
+            if (!distance && !time) return;
+
             const sportKey = session.sport || 'running';
             if (!totals[sportKey]) {
-                totals[sportKey] = { min: 0, max: 0, has: false };
+                totals[sportKey] = {
+                    kmMin: 0,
+                    kmMax: 0,
+                    timeMin: 0,
+                    timeMax: 0,
+                    hasKm: false,
+                    hasTime: false,
+                };
             }
-            totals[sportKey].min += volume.min;
-            totals[sportKey].max += volume.max;
-            totals[sportKey].has = true;
+
+            if (distance) {
+                totals[sportKey].kmMin += distance.min;
+                totals[sportKey].kmMax += distance.max;
+                totals[sportKey].hasKm = true;
+            }
+            if (time) {
+                totals[sportKey].timeMin += time.min;
+                totals[sportKey].timeMax += time.max;
+                totals[sportKey].hasTime = true;
+            }
         });
     }
 
     const orderedSports = Object.keys(sportLabels);
-    const sportsWithData = orderedSports.filter((sport) => totals[sport]?.has);
+    const sportsWithData = orderedSports.filter((sport) => {
+        const data = totals[sport];
+        return data?.hasKm || data?.hasTime;
+    });
 
     if (sportsWithData.length === 0) {
         container.innerHTML = `<p class="volume-estimate-empty">Aucun volume estimé sur ${totalDays} jours.</p>`;
@@ -954,13 +1137,31 @@ function updateVolumeEstimate() {
         .map((sportKey) => {
             const data = totals[sportKey];
             const label = getSportLabel(sportKey);
-            const valueText = data.min === data.max
-                ? `${formatVolumeNumber(data.min)} km`
-                : `${formatVolumeNumber(data.min)} - ${formatVolumeNumber(data.max)} km`;
+            const kmText = data.hasKm
+                ? (data.kmMin === data.kmMax
+                    ? `${formatVolumeNumber(data.kmMin)} km`
+                    : `${formatVolumeNumber(data.kmMin)} - ${formatVolumeNumber(data.kmMax)} km`)
+                : null;
+            const timeText = data.hasTime
+                ? formatDurationRange(data.timeMin, data.timeMax)
+                : null;
             return `
                 <div class="volume-estimate-row">
-                    <span>${escapeHtml(label)}</span>
-                    <span class="volume-estimate-value">${escapeHtml(valueText)}</span>
+                    <span class="volume-estimate-sport">${escapeHtml(label)}</span>
+                    <div class="volume-estimate-values">
+                        ${kmText ? `
+                            <div class="volume-estimate-line">
+                                <span class="volume-estimate-label">km</span>
+                                <span class="volume-estimate-value">${escapeHtml(kmText)}</span>
+                            </div>
+                        ` : ''}
+                        ${timeText ? `
+                            <div class="volume-estimate-line">
+                                <span class="volume-estimate-label">temps</span>
+                                <span class="volume-estimate-value">${escapeHtml(timeText)}</span>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
             `;
         })
@@ -1001,6 +1202,7 @@ function showSessionLibraryModal(session) {
         <p><strong>Catégorie:</strong> ${categoryLabels[session.category]}</p>
         <p><strong>Sport:</strong> ${escapeHtml(getSportLabel(session.sport))}</p>
         <p><strong>Volume estimé:</strong> ${escapeHtml(formatSessionVolumeText(session))}</p>
+        <p><strong>Volume horaire estimé:</strong> ${escapeHtml(formatSessionTimeText(session))}</p>
         ${session.comment ? `<p><strong>Commentaire:</strong> ${escapeHtml(session.comment)}</p>` : ''}
     `;
 
@@ -1022,6 +1224,7 @@ function showSessionModal(session, dateStr) {
         <p><strong>Catégorie:</strong> ${categoryLabels[session.category]}</p>
         <p><strong>Sport:</strong> ${escapeHtml(getSportLabel(session.sport))}</p>
         <p><strong>Volume estimé:</strong> ${escapeHtml(formatSessionVolumeText(session))}</p>
+        <p><strong>Volume horaire estimé:</strong> ${escapeHtml(formatSessionTimeText(session))}</p>
         ${session.comment ? `<p><strong>Commentaire:</strong> ${escapeHtml(session.comment)}</p>` : ''}
         <p><strong>Date:</strong> ${new Date(dateStr).toLocaleDateString('fr-FR')}</p>
     `;

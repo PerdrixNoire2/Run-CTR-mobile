@@ -300,6 +300,7 @@ body {
 
 .volume-inputs {
     display: flex;
+    flex-direction: column;
     gap: 8px;
 }
 
@@ -310,6 +311,72 @@ body {
 .volume-inputs .input-field {
     flex: 1;
     margin-bottom: 0;
+}
+
+.volume-distance-range {
+    display: flex;
+    gap: 8px;
+}
+
+.volume-time-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+.volume-time-input {
+    width: 70px;
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 8px 6px;
+    font-size: 0.8rem;
+}
+
+.volume-time-sep {
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+.volume-time-range {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.volume-time-range-sep {
+    color: #9ca3af;
+    font-weight: 700;
+}
+
+.volume-estimate-values {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.volume-estimate-line {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.volume-estimate-label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.volume-estimate-row {
+    align-items: flex-start;
+}
+
+.volume-estimate-sport {
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .btn-primary {

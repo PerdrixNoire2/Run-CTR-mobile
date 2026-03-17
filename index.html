@@ -21,7 +21,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20260310-2">
     <link rel="shortcut icon" href="favicon-32x32.png?v=20260310-2">
     <link rel="manifest" href="site.webmanifest?v=20260310-2">
-    <link rel="stylesheet" href="styles.css?v=20260317-3">
+    <link rel="stylesheet" href="styles.css?v=20260317-5">
 </head>
 <body>
     <div class="container">
@@ -76,10 +76,36 @@
                     </div>
                     <div class="volume-inputs" id="sessionVolumeFixed">
                         <input type="text" id="sessionVolumeValue" class="input-field volume-input" placeholder="km" inputmode="decimal">
+                        <div class="volume-time-group">
+                            <input type="text" id="sessionTimeH" class="input-field volume-time-input" placeholder="h" inputmode="numeric">
+                            <span class="volume-time-sep">:</span>
+                            <input type="text" id="sessionTimeM" class="input-field volume-time-input" placeholder="min" inputmode="numeric">
+                            <span class="volume-time-sep">:</span>
+                            <input type="text" id="sessionTimeS" class="input-field volume-time-input" placeholder="sec" inputmode="numeric">
+                        </div>
                     </div>
                     <div class="volume-inputs is-hidden" id="sessionVolumeRangeFields">
-                        <input type="text" id="sessionVolumeMin" class="input-field volume-input" placeholder="min km" inputmode="decimal">
-                        <input type="text" id="sessionVolumeMax" class="input-field volume-input" placeholder="max km" inputmode="decimal">
+                        <div class="volume-distance-range">
+                            <input type="text" id="sessionVolumeMin" class="input-field volume-input" placeholder="min km" inputmode="decimal">
+                            <input type="text" id="sessionVolumeMax" class="input-field volume-input" placeholder="max km" inputmode="decimal">
+                        </div>
+                        <div class="volume-time-range">
+                            <div class="volume-time-group">
+                                <input type="text" id="sessionTimeMinH" class="input-field volume-time-input" placeholder="h" inputmode="numeric">
+                                <span class="volume-time-sep">:</span>
+                                <input type="text" id="sessionTimeMinM" class="input-field volume-time-input" placeholder="min" inputmode="numeric">
+                                <span class="volume-time-sep">:</span>
+                                <input type="text" id="sessionTimeMinS" class="input-field volume-time-input" placeholder="sec" inputmode="numeric">
+                            </div>
+                            <span class="volume-time-range-sep">-</span>
+                            <div class="volume-time-group">
+                                <input type="text" id="sessionTimeMaxH" class="input-field volume-time-input" placeholder="h" inputmode="numeric">
+                                <span class="volume-time-sep">:</span>
+                                <input type="text" id="sessionTimeMaxM" class="input-field volume-time-input" placeholder="min" inputmode="numeric">
+                                <span class="volume-time-sep">:</span>
+                                <input type="text" id="sessionTimeMaxS" class="input-field volume-time-input" placeholder="sec" inputmode="numeric">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <button id="addSessionBtn" class="btn-primary">Ajouter</button>
@@ -177,6 +203,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=20260317-2"></script>
+    <script src="app.js?v=20260317-3"></script>
 </body>
 </html>
