@@ -7,6 +7,9 @@ const state = {
     selectedDay: null,
     draggedSession: null,
     isDragging: false,
+    activeModalSessionId: null,
+    activeModalDateStr: null,
+    isEditingSession: false,
 };
 
 
@@ -75,6 +78,8 @@ const elements = {
     sessionModal: document.getElementById('sessionModal'),
     modalBody: document.getElementById('modalBody'),
     deleteSessionBtn: document.getElementById('deleteSessionBtn'),
+    editSessionBtn: document.getElementById('editSessionBtn'),
+    saveSessionBtn: document.getElementById('saveSessionBtn'),
     closeModalBtn: document.getElementById('closeModalBtn'),
     closeModalX: document.querySelector('.close-modal'),
 };
@@ -122,6 +127,17 @@ function setupEventListeners() {
     elements.sessionModal.addEventListener('click', (e) => {
         if (e.target === elements.sessionModal) closeModal();
     });
+    if (elements.editSessionBtn) {
+        elements.editSessionBtn.addEventListener('click', () => {
+            const session = state.sessions.find(s => s.id === state.activeModalSessionId);
+            if (session) {
+                openSessionEditForm(session);
+            }
+        });
+    }
+    if (elements.saveSessionBtn) {
+        elements.saveSessionBtn.addEventListener('click', saveEditedSession);
+    }
 
     // Library toggle
     const libraryToggle = document.getElementById('libraryToggle');
@@ -306,6 +322,76 @@ function updateDayNoteUI() {
     }
     closeNoteMenus();
     closeNoteEditor();
+}
+
+function buildCategoryOptions(selected) {
+    return Object.entries(categoryLabels)
+        .map(([value, label]) => {
+            const isSelected = value === (selected || 'other') ? 'selected' : '';
+            return `<option value="${escapeHtml(value)}" ${isSelected}>${escapeHtml(label)}</option>`;
+        })
+        .join('');
+}
+
+function buildSportOptions(selected) {
+    return Object.entries(sportLabels)
+        .map(([value, label]) => {
+            const isSelected = value === (selected || 'running') ? 'selected' : '';
+            return `<option value="${escapeHtml(value)}" ${isSelected}>${escapeHtml(label)}</option>`;
+        })
+        .join('');
+}
+
+function openSessionEditForm(session) {
+    state.isEditingSession = true;
+    elements.modalBody.innerHTML = `
+        <label class="modal-label">Titre</label>
+        <input type="text" id="editSessionTitle" class="input-field" value="${escapeHtml(session.title)}">
+        <label class="modal-label">Commentaire</label>
+        <textarea id="editSessionComment" class="input-field" rows="2">${escapeHtml(session.comment || '')}</textarea>
+        <label class="modal-label">Catégorie</label>
+        <select id="editSessionCategory" class="input-field">
+            ${buildCategoryOptions(session.category)}
+        </select>
+        <label class="modal-label">Sport</label>
+        <select id="editSessionSport" class="input-field">
+            ${buildSportOptions(session.sport)}
+        </select>
+    `;
+
+    elements.deleteSessionBtn.style.display = 'none';
+    if (elements.editSessionBtn) elements.editSessionBtn.style.display = 'none';
+    if (elements.saveSessionBtn) elements.saveSessionBtn.style.display = 'inline-flex';
+    elements.closeModalBtn.textContent = 'Annuler';
+}
+
+function saveEditedSession() {
+    const sessionId = state.activeModalSessionId;
+    const session = state.sessions.find(s => s.id === sessionId);
+    if (!session) return;
+
+    const title = document.getElementById('editSessionTitle')?.value.trim() || '';
+    if (!title) {
+        alert('Veuillez entrer un titre pour la séance');
+        return;
+    }
+    session.title = title;
+    session.comment = document.getElementById('editSessionComment')?.value.trim() || '';
+    session.category = document.getElementById('editSessionCategory')?.value || 'other';
+    session.sport = document.getElementById('editSessionSport')?.value || 'running';
+
+    saveToLocalStorage();
+    renderSessions();
+    renderCalendar();
+    updateDayDetails();
+
+    state.isEditingSession = false;
+    const dateStr = state.activeModalDateStr;
+    if (dateStr) {
+        showSessionModal(session, dateStr);
+    } else {
+        showSessionLibraryModal(session);
+    }
 }
 
 // ============== SESSION MANAGEMENT ==============
@@ -682,6 +768,9 @@ function changeMonth(offset) {
 
 // ============== MODAL ==============
 function showSessionLibraryModal(session) {
+    state.activeModalSessionId = session.id;
+    state.activeModalDateStr = null;
+    state.isEditingSession = false;
     elements.modalBody.innerHTML = `
         <p><strong>Titre:</strong> ${escapeHtml(session.title)}</p>
         <p><strong>Catégorie:</strong> ${categoryLabels[session.category]}</p>
@@ -691,12 +780,17 @@ function showSessionLibraryModal(session) {
 
     // Clear delete button data since this is just viewing
     elements.deleteSessionBtn.style.display = 'none';
+    if (elements.editSessionBtn) elements.editSessionBtn.style.display = 'inline-flex';
+    if (elements.saveSessionBtn) elements.saveSessionBtn.style.display = 'none';
     elements.closeModalBtn.textContent = 'Fermer';
 
     elements.sessionModal.classList.add('show');
 }
 
 function showSessionModal(session, dateStr) {
+    state.activeModalSessionId = session.id;
+    state.activeModalDateStr = dateStr;
+    state.isEditingSession = false;
     elements.modalBody.innerHTML = `
         <p><strong>Titre:</strong> ${escapeHtml(session.title)}</p>
         <p><strong>Catégorie:</strong> ${categoryLabels[session.category]}</p>
@@ -709,14 +803,22 @@ function showSessionModal(session, dateStr) {
     elements.deleteSessionBtn.dataset.sessionId = session.id;
     elements.deleteSessionBtn.dataset.dateStr = dateStr;
     elements.deleteSessionBtn.style.display = 'block';
+    if (elements.editSessionBtn) elements.editSessionBtn.style.display = 'inline-flex';
+    if (elements.saveSessionBtn) elements.saveSessionBtn.style.display = 'none';
     elements.closeModalBtn.textContent = 'Fermer';
 
     elements.sessionModal.classList.add('show');
 }
 
 function closeModal() {
+    if (state.isEditingSession) {
+        state.isEditingSession = false;
+    }
     elements.sessionModal.classList.remove('show');
     elements.deleteSessionBtn.style.display = 'none';
+    if (elements.editSessionBtn) elements.editSessionBtn.style.display = 'inline-flex';
+    if (elements.saveSessionBtn) elements.saveSessionBtn.style.display = 'none';
+    elements.closeModalBtn.textContent = 'Fermer';
 }
 
 function deleteScheduledSession() {

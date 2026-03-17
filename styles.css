@@ -1043,6 +1043,14 @@ button.library-category-title.library-toggle {
     margin-bottom: 20px;
 }
 
+#modalBody .modal-label {
+    display: block;
+    margin: 8px 0 6px;
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 600;
+}
+
 #modalBody {
     margin-bottom: 20px;
 }
