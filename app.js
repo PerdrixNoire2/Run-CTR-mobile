@@ -4,6 +4,7 @@ const state = {
     sessions: [], // Array of all sessions
     scheduledSessions: {}, // Format: { 'YYYY-MM-DD': [sessionIds] }
     dayNotes: {}, // Format: { 'YYYY-MM-DD': { text, visible } }
+    daySessionComments: {}, // Format: { 'YYYY-MM-DD': { sessionId: comment } }
     selectedDay: null,
     draggedSession: null,
     isDragging: false,
@@ -295,6 +296,31 @@ function getDayNoteData(dateStr) {
         text: existing.text || defaultDayNote,
         visible: existing.visible !== false,
     };
+}
+
+function getDaySessionComment(dateStr, sessionId) {
+    if (!dateStr || !sessionId) return '';
+    const dayMap = state.daySessionComments[dateStr];
+    if (!dayMap) return '';
+    return dayMap[sessionId] || '';
+}
+
+function setDaySessionComment(dateStr, sessionId, comment) {
+    if (!dateStr || !sessionId) return;
+    const trimmed = (comment || '').trim();
+    if (!trimmed) {
+        if (state.daySessionComments[dateStr]) {
+            delete state.daySessionComments[dateStr][sessionId];
+            if (Object.keys(state.daySessionComments[dateStr]).length === 0) {
+                delete state.daySessionComments[dateStr];
+            }
+        }
+        return;
+    }
+    if (!state.daySessionComments[dateStr]) {
+        state.daySessionComments[dateStr] = {};
+    }
+    state.daySessionComments[dateStr][sessionId] = trimmed;
 }
 
 function setDayNoteData(dateStr, updates) {
@@ -599,9 +625,16 @@ function formatSessionVolumeText(session) {
 
 function openSessionEditForm(session) {
     state.isEditingSession = true;
+    const dayCommentField = state.activeModalDateStr
+        ? `
+            <label class="modal-label">Commentaire du jour (éphémère)</label>
+            <textarea id="editSessionDayComment" class="input-field" rows="2">${escapeHtml(getDaySessionComment(state.activeModalDateStr, session.id))}</textarea>
+        `
+        : '';
     elements.modalBody.innerHTML = `
         <label class="modal-label">Titre</label>
         <input type="text" id="editSessionTitle" class="input-field" value="${escapeHtml(session.title)}">
+        ${dayCommentField}
         <label class="modal-label">Commentaire</label>
         <textarea id="editSessionComment" class="input-field" rows="2">${escapeHtml(session.comment || '')}</textarea>
         <label class="modal-label">Catégorie</label>
@@ -685,6 +718,10 @@ function saveEditedSession() {
     session.sport = document.getElementById('editSessionSport')?.value || 'running';
     session.volume = getVolumeFromInputs('editSession');
     session.volumeTime = getTimeFromInputs('editSession');
+    if (state.activeModalDateStr) {
+        const dayComment = document.getElementById('editSessionDayComment')?.value || '';
+        setDaySessionComment(state.activeModalDateStr, sessionId, dayComment);
+    }
 
     saveToLocalStorage();
     renderSessions();
@@ -1037,14 +1074,22 @@ function updateDayDetails() {
                 const div = document.createElement('div');
                 const sessionSport = session.sport || 'running';
                 const sessionCategory = session.category || 'other';
+                const dayComment = getDaySessionComment(state.selectedDay, session.id);
                 div.className = `session-detail-item ${sessionSport} ${sessionCategory}`;
                 div.dataset.category = sessionCategory;
                 if (sessionSport === 'running') {
                     div.dataset.runningIcon = getRunningIconType(sessionCategory);
                 }
+                const commentLines = [];
+                if (session.comment) {
+                    commentLines.push(`<div class="session-detail-info">${escapeHtml(session.comment)}</div>`);
+                }
+                if (dayComment) {
+                    commentLines.push(`<div class="session-detail-info">${escapeHtml(dayComment)}</div>`);
+                }
                 div.innerHTML = `
                     <div class="session-detail-title">${escapeHtml(session.title)}</div>
-                    ${session.comment ? `<div class="session-detail-info">${escapeHtml(session.comment)}</div>` : ''}
+                    ${commentLines.join('')}
                 `;
                 div.addEventListener('click', () => showSessionModal(session, state.selectedDay));
                 elements.daySessionsList.appendChild(div);
@@ -1282,6 +1327,7 @@ function showSessionModal(session, dateStr) {
     state.activeModalSessionId = session.id;
     state.activeModalDateStr = dateStr;
     state.isEditingSession = false;
+    const dayComment = getDaySessionComment(dateStr, session.id);
     elements.modalBody.innerHTML = `
         <p><strong>Titre:</strong> ${escapeHtml(session.title)}</p>
         <p><strong>Catégorie:</strong> ${categoryLabels[session.category]}</p>
@@ -1289,6 +1335,7 @@ function showSessionModal(session, dateStr) {
         <p><strong>Volume estimé:</strong> ${escapeHtml(formatSessionVolumeText(session))}</p>
         <p><strong>Volume horaire estimé:</strong> ${escapeHtml(formatSessionTimeText(session))}</p>
         ${session.comment ? `<p><strong>Commentaire:</strong> ${escapeHtml(session.comment)}</p>` : ''}
+        ${dayComment ? `<p><strong>Commentaire du jour:</strong> ${escapeHtml(dayComment)}</p>` : ''}
         <p><strong>Date:</strong> ${new Date(dateStr).toLocaleDateString('fr-FR')}</p>
     `;
 
@@ -1324,6 +1371,12 @@ function deleteScheduledSession() {
             delete state.scheduledSessions[dateStr];
         }
     }
+    if (state.daySessionComments[dateStr]) {
+        delete state.daySessionComments[dateStr][sessionId];
+        if (Object.keys(state.daySessionComments[dateStr]).length === 0) {
+            delete state.daySessionComments[dateStr];
+        }
+    }
 
     saveToLocalStorage();
     renderCalendar();
@@ -1338,6 +1391,7 @@ function saveToLocalStorage() {
         scheduledSessions: state.scheduledSessions,
         dayNotes: state.dayNotes,
         volumeDays: state.volumeDays,
+        daySessionComments: state.daySessionComments,
     };
     localStorage.setItem('trainingPlatformData', JSON.stringify(data));
 }
@@ -1350,6 +1404,7 @@ function loadFromLocalStorage() {
             state.sessions = parsed.sessions || [];
             state.scheduledSessions = parsed.scheduledSessions || {};
             state.dayNotes = parsed.dayNotes || {};
+            state.daySessionComments = parsed.daySessionComments || {};
             if (typeof parsed.volumeDays === 'number') {
                 state.volumeDays = Math.min(31, Math.max(2, parsed.volumeDays));
             }
@@ -1381,6 +1436,9 @@ function purgePastScheduledSessions() {
     Object.keys(state.scheduledSessions).forEach((dateStr) => {
         if (dateStr <= cutoffStr) {
             delete state.scheduledSessions[dateStr];
+            if (state.daySessionComments[dateStr]) {
+                delete state.daySessionComments[dateStr];
+            }
             hasChanges = true;
         }
     });
@@ -1429,6 +1487,14 @@ function removeLibrarySession(sessionId) {
     for (const date in state.scheduledSessions) {
         state.scheduledSessions[date] = state.scheduledSessions[date].filter((id) => id !== sessionId);
         if (state.scheduledSessions[date].length === 0) delete state.scheduledSessions[date];
+    }
+    for (const date in state.daySessionComments) {
+        if (state.daySessionComments[date]?.[sessionId]) {
+            delete state.daySessionComments[date][sessionId];
+            if (Object.keys(state.daySessionComments[date]).length === 0) {
+                delete state.daySessionComments[date];
+            }
+        }
     }
     saveToLocalStorage();
     renderSessions();
