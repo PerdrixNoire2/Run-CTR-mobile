@@ -303,6 +303,10 @@ body {
     gap: 8px;
 }
 
+.volume-inputs.is-hidden {
+    display: none;
+}
+
 .volume-inputs .input-field {
     flex: 1;
     margin-bottom: 0;
