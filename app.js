@@ -347,7 +347,9 @@ function renderSessions() {
     library.innerHTML = '';
 
     categories.forEach((cat) => {
-        const catSessions = state.sessions.filter(s => s.category === cat);
+        const catSessions = state.sessions
+            .map((session, index) => ({ session, index }))
+            .filter(({ session }) => session.category === cat);
         if (catSessions.length === 0) return;
 
         const section = document.createElement('div');
@@ -360,8 +362,24 @@ function renderSessions() {
 
         const list = document.createElement('div');
         list.className = 'sessions-list';
-        catSessions.forEach(session => {
-            list.appendChild(createSessionElement(session));
+        const sportOrder = new Map();
+        catSessions.forEach(({ session, index }) => {
+            const sportKey = session.sport || 'running';
+            if (!sportOrder.has(sportKey)) {
+                sportOrder.set(sportKey, index);
+            }
+        });
+        catSessions
+            .sort((a, b) => {
+                const aSport = a.session.sport || 'running';
+                const bSport = b.session.sport || 'running';
+                const aGroup = sportOrder.get(aSport);
+                const bGroup = sportOrder.get(bSport);
+                if (aGroup !== bGroup) return aGroup - bGroup;
+                return a.index - b.index;
+            })
+            .forEach(({ session }) => {
+                list.appendChild(createSessionElement(session));
         });
         section.appendChild(list);
 
