@@ -21,7 +21,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20260310-2">
     <link rel="shortcut icon" href="favicon-32x32.png?v=20260310-2">
     <link rel="manifest" href="site.webmanifest?v=20260310-2">
-    <link rel="stylesheet" href="styles.css?v=20260317-2">
+    <link rel="stylesheet" href="styles.css?v=20260317-3">
 </head>
 <body>
     <div class="container">
@@ -149,7 +149,14 @@
                 </div>
             </div>
             <div class="volume-estimate" id="volumeEstimate">
-                <h3>Volume 7J estimé</h3>
+                <div class="volume-estimate-header">
+                    <h3>Volume estimé</h3>
+                    <div class="volume-days-selector">
+                        <span class="volume-days-label">Sur</span>
+                        <select id="volumeDaysSelect" class="input-field volume-days-select"></select>
+                        <span class="volume-days-label">jours</span>
+                    </div>
+                </div>
                 <div class="volume-estimate-content" id="volumeEstimateContent"></div>
             </div>
         </main>
@@ -170,6 +177,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=20260317-1"></script>
+    <script src="app.js?v=20260317-2"></script>
 </body>
 </html>
