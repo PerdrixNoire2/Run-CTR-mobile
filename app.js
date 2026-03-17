@@ -117,6 +117,11 @@ function setupEventListeners() {
     const addSection = document.getElementById('addSessionSection');
     toggleBtn.addEventListener('click', () => {
         addSection.classList.toggle('hidden');
+        const icon = toggleBtn.querySelector('.toggle-add-icon');
+        const isHidden = addSection.classList.contains('hidden');
+        if (icon) {
+            icon.textContent = isHidden ? '+' : '−';
+        }
     });
 
     // Calendar navigation
