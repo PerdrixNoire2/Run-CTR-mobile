@@ -669,8 +669,6 @@ function openSessionEditForm(session) {
                     <input type="text" id="editSessionTimeH" class="input-field volume-time-input" placeholder="h" inputmode="numeric">
                     <span class="volume-time-sep">:</span>
                     <input type="text" id="editSessionTimeM" class="input-field volume-time-input" placeholder="min" inputmode="numeric">
-                    <span class="volume-time-sep">:</span>
-                    <input type="text" id="editSessionTimeS" class="input-field volume-time-input" placeholder="sec" inputmode="numeric">
                 </div>
             </div>
             <div class="volume-inputs is-hidden" id="editSessionVolumeRangeFields">
@@ -683,16 +681,12 @@ function openSessionEditForm(session) {
                         <input type="text" id="editSessionTimeMinH" class="input-field volume-time-input" placeholder="h" inputmode="numeric">
                         <span class="volume-time-sep">:</span>
                         <input type="text" id="editSessionTimeMinM" class="input-field volume-time-input" placeholder="min" inputmode="numeric">
-                        <span class="volume-time-sep">:</span>
-                        <input type="text" id="editSessionTimeMinS" class="input-field volume-time-input" placeholder="sec" inputmode="numeric">
                     </div>
                     <span class="volume-time-range-sep">-</span>
                     <div class="volume-time-group">
                         <input type="text" id="editSessionTimeMaxH" class="input-field volume-time-input" placeholder="h" inputmode="numeric">
                         <span class="volume-time-sep">:</span>
                         <input type="text" id="editSessionTimeMaxM" class="input-field volume-time-input" placeholder="min" inputmode="numeric">
-                        <span class="volume-time-sep">:</span>
-                        <input type="text" id="editSessionTimeMaxS" class="input-field volume-time-input" placeholder="sec" inputmode="numeric">
                     </div>
                 </div>
             </div>
