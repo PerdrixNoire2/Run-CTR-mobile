@@ -49,6 +49,22 @@ const slowRunningCategories = new Set([
 
 const defaultDayNote = `AS 5K: ... : ... '/km | 10K: ... : ... '/km | 21K: ... : ... '/km | 42K: ... : ... '/km
 FC : i1: ... - ... bpm | i2: ... - ... bpm | i3: ... - ... bpm | i4: ... - ... bpm | i5: ... - ... bpm`;
+const legacyDayNote = `Allure spécifique:
+5K: ... : ... min/K
+10K: ... : ...  min/K
+21K: ... : ... min/K
+42K: ... : ... min/K
+
+FC range:
+i1: ... - ... bpm
+i2: ... - ... bpm
+i3: ... - ... bpm
+i4: ... - ... bpm
+i5: ... - ... bpm`;
+
+function normalizeNoteText(text) {
+    return (text || '').replace(/\r\n/g, '\n').trim();
+}
 
 function getRunningIconType(category) {
     return slowRunningCategories.has(category) ? 'slow' : 'fast';
@@ -1429,11 +1445,11 @@ function loadFromLocalStorage() {
             if (typeof parsed.volumeDays === 'number') {
                 state.volumeDays = Math.min(31, Math.max(2, parsed.volumeDays));
             }
-            const legacyPattern = /Allure\s+sp[ée]cifique|FC range/i;
+            const legacyNormalized = normalizeNoteText(legacyDayNote);
             let migrated = false;
             Object.keys(state.dayNotes).forEach((dateStr) => {
                 const note = state.dayNotes[dateStr];
-                if (note && typeof note.text === 'string' && legacyPattern.test(note.text)) {
+                if (note && typeof note.text === 'string' && normalizeNoteText(note.text) === legacyNormalized) {
                     state.dayNotes[dateStr] = { ...note, text: defaultDayNote };
                     migrated = true;
                 }
