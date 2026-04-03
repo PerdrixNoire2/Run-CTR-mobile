@@ -93,6 +93,8 @@ const elements = {
     closeModalX: document.querySelector('.close-modal'),
 };
 
+let noteAutosaveTimer = null;
+
 // ============== INITIALIZATION ==============
 document.addEventListener('DOMContentLoaded', () => {
     loadFromLocalStorage();
@@ -215,11 +217,18 @@ function setupEventListeners() {
         });
     }
 
+    if (elements.dayNoteTextarea) {
+        elements.dayNoteTextarea.addEventListener('input', () => autosaveDayNoteDraft(false));
+        elements.dayNoteTextarea.addEventListener('blur', () => autosaveDayNoteDraft(true));
+    }
+
     document.addEventListener('click', (e) => {
         if (elements.dayNote && !elements.dayNote.contains(e.target)) {
             closeNoteMenus();
         }
     });
+
+    window.addEventListener('beforeunload', () => autosaveDayNoteDraft(true));
 
     initVolumeInputs('session');
     setupVolumeDaysSelect();
@@ -334,6 +343,19 @@ function setDayNoteData(dateStr, updates) {
     const next = { ...current, ...updates };
     state.dayNotes[dateStr] = next;
     saveToLocalStorage();
+}
+
+function autosaveDayNoteDraft(immediate = false) {
+    if (!elements.dayNoteTextarea || !state.selectedDay) return;
+    const value = elements.dayNoteTextarea.value ?? '';
+    if (noteAutosaveTimer) clearTimeout(noteAutosaveTimer);
+    if (immediate) {
+        setDayNoteData(state.selectedDay, { text: value });
+        return;
+    }
+    noteAutosaveTimer = setTimeout(() => {
+        setDayNoteData(state.selectedDay, { text: value });
+    }, 400);
 }
 
 function closeNoteMenus() {
